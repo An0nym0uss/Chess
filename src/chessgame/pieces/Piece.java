@@ -27,8 +27,43 @@ public abstract class Piece {
 
     public abstract boolean canMove(int toX, int toY, Board board);
 
-    public abstract void move(int toX, int toY, Board board);
+    /**
+     * Move the piece to the tile.
+     * Assume that the position given is valid.
+     * @param toX
+     * @param toY
+     * @param board
+     */
+    public void move(int toX, int toY, Board board) {
+        int fromX = this.x;
+        int fromY = this.y;
+        this.x = toX;
+        this.y = toY;
+        if (board.getPiece(toX, toY) == null) {
+            // occupy empty tile
+            board.removePiece(fromX, fromY);
+            board.setTile(toX, toY, this);
 
+            if (this instanceof King) {
+                // castling
+                castling(fromX, fromY, toX, toY, board);
+            }
+        } else {
+            // capture enemy piece
+            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
+            board.removePiece(fromX, fromY);
+            board.setTile(toX, toY, this);
+        }
+
+        // store the movement
+        Move move = new Move(fromX, fromY, toX, toY, this);
+        board.getMoves().push(move);
+    }
+
+    /**
+     * Store all possible moves can be made by this piece.
+     * @param board
+     */
     public void allLegalMoves(Board board) {
         legalMoves = new ArrayList<Move>();
         for (int i = 0; i < Board.ROWS; i++) {
@@ -37,6 +72,35 @@ public abstract class Piece {
                     legalMoves.add(new Move(x, y, i, j, this));
                 }
             }
+        }
+    }
+
+    /**
+     * Castling consists of moving the king two squares towards a rook, 
+     * then placing the rook on the other side of the king, adjacent to it.
+     * @param fromX
+     * @param fromY
+     * @param toX
+     * @param toY
+     * @param board
+     */
+    private void castling(int fromX, int fromY, int toX, int toY, Board board) {
+        if (toY - fromY == 2) {
+            // Castle kingside
+            int yRook = toY + 1;
+            Piece rook = board.getPiece(fromX, yRook);
+
+            // move rook
+            board.removePiece(fromX, yRook);
+            board.setTile(toX, toY - 1, rook);
+        } else if (fromY - toY == 2) {
+            // Castle queenside
+            int yRook = 0;
+            Piece rook = board.getPiece(fromX, yRook);
+
+            // move rook
+            board.removePiece(fromX, yRook);
+            board.setTile(toX, toY + 1, rook);
         }
     }
 

@@ -18,7 +18,7 @@ public class Board {
     private Piece[][] tiles;
     private List<Piece> wPieces = new ArrayList<>();
     private List<Piece> bPieces = new ArrayList<>();
-    private Stack<Piece> moves = new Stack<>();
+    private Stack<Move> moves = new Stack<>();
     private Integer turn;
     private Map<Integer, Piece> deadPieces = new HashMap<>();
 
@@ -31,7 +31,22 @@ public class Board {
      * Initialise the board to put pieces on tiles.
      */
     public void setup() {
+        // TODO 
+    }
 
+    // get the piece on the tile of given x and y coordinates
+    public Piece getPiece(int x, int y) {
+        return tiles[x][y];
+    }
+
+    // set the position of the piece to the tile
+    public void setTile(int x, int y, Piece piece) {
+        tiles[x][y] = piece;
+    }
+
+    // remove the piece in the tile
+    public void removePiece(int x, int y) {
+        tiles[x][y] = null;
     }
 
     // getters and setters
@@ -60,7 +75,7 @@ public class Board {
     /**
      * @return the moves
      */
-    public Stack<Piece> getMoves() {
+    public Stack<Move> getMoves() {
         return moves;
     }
 
