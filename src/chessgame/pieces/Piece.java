@@ -17,12 +17,16 @@ public abstract class Piece {
     protected boolean isMoved;
     protected List<Move> legalMoves = new ArrayList<>();
     protected BufferedImage image;
+    private int startX;
+    private int startY;
 
-    Piece(int x, int y, boolean isWhite) {
+    public Piece(int x, int y, boolean isWhite) {
         this.x = x;
         this.y = y;
         this.isWhite = isWhite;
         this.isMoved = false;
+        this.startX = x;
+        this.startY = y;
     }
 
     public abstract boolean canMove(int toX, int toY, Board board);
@@ -30,6 +34,7 @@ public abstract class Piece {
     /**
      * Move the piece to the tile.
      * Assume that the position given is valid.
+     * 
      * @param toX
      * @param toY
      * @param board
@@ -62,6 +67,7 @@ public abstract class Piece {
 
     /**
      * Store all possible moves can be made by this piece.
+     * 
      * @param board
      */
     public void allLegalMoves(Board board) {
@@ -76,8 +82,9 @@ public abstract class Piece {
     }
 
     /**
-     * Castling consists of moving the king two squares towards a rook, 
+     * Castling consists of moving the king two squares towards a rook,
      * then placing the rook on the other side of the king, adjacent to it.
+     * 
      * @param fromX
      * @param fromY
      * @param toX
@@ -153,5 +160,13 @@ public abstract class Piece {
      */
     public List<Move> getLegalMoves() {
         return legalMoves;
+    }
+
+    public int getStartX() {
+        return this.startX;
+    }
+
+    public int getStartY() {
+        return this.startY;
     }
 }
