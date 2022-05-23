@@ -12,42 +12,49 @@ public class Pawn extends Piece {
     public Pawn(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         firstMove = true;
-        // try {
-        // if (isWhite) {
-        // this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_W));
-        // } else {
-        // this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_B));
-        // }
-        // } catch (IOException e) {
-        // System.out.println("Image file not found: " + e.getMessage());
-        // }
+        try {
+            if (isWhite) {
+                this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_W));
+            } else {
+                this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_B));
+            }
+        } catch (IOException e) {
+            System.out.println("Image file not found: " + e.getMessage());
+        }
     }
 
     @Override
     public boolean canMove(int toX, int toY, Board board) {
-        // The pawn is of the color that start at the top and theres eligiblee pieces
-        // for an attack
-        if ((getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)
-                || (getStartY() >= getY()
-                        && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)) {
+        // toggle off first move
+        if (firstMove && this.y != this.getStartX()) {
+            this.firstMove = false;
+        }
+
+        // The pawn is able to move diagonally for 1 tile when attacking
+        if (
+            (getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)
+            || 
+            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)) {
             return true;
         }
-        // The pawn is of the color that start at the bottom and theres eligiblee pieces
-        // for an attack
-        if ((getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null)
-                || (getStartY() >= getY()
-                        && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null)) {
+        if (
+            (getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null) 
+            || 
+            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null)) {
             return true;
         }
-        // The pawn is unable to move horizontally without having a piece availbe for an
-        // attack
+
+        // The pawn is unable to move horizontally without having a piece availbe for an attack
         if (getStartX() != toX) {
             return false;
         }
-        // When the pawn is obstructed
+
+        // The pawn is unable to advance beyond and including the tile occupied by a piece of any color 
         if (isObstructed(toX, toY, board)) {
             return false;
         }
+
+        // The pawn is able to move 2 tile with its first move
         if (getStartY() >= 5 && toY < getY()) {
             if (this.firstMove && getY() - toY <= 2) {
                 return true;
@@ -65,12 +72,7 @@ public class Pawn extends Piece {
         return false;
     }
 
-    /**
-     * 
-     * @param toX
-     * @param toY
-     * @param board
-     */
+
     private boolean isObstructed(int toX, int toY, Board board) {
         // Case when the pawn is of the color that start at the top
         if (getStartY() >= 5) {
