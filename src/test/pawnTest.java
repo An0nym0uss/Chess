@@ -1,5 +1,7 @@
 package test;
 
+import org.junit.jupiter.api.Test;
+
 import chessgame.pieces.*;
 import chessgame.Board;
 
