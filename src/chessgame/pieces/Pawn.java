@@ -7,11 +7,8 @@ import chessgame.Board;
 
 public class Pawn extends Piece {
 
-    private boolean firstMove;
-
     public Pawn(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
-        firstMove = true;
         try {
             if (isWhite) {
                 this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_W));
@@ -26,21 +23,21 @@ public class Pawn extends Piece {
     @Override
     public boolean canMove(int toX, int toY, Board board) {
         // toggle off first move
-        if (firstMove && this.y != this.getStartX()) {
-            this.firstMove = false;
+        if (!isMoved && this.y != this.getStartX()) {
+            this.isMoved = true;
         }
 
         // The pawn is able to move diagonally for 1 tile when attacking
         if (
-            (getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)
+            (getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)
             || 
-            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null)) {
+            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
             return true;
         }
         if (
-            (getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null) 
+            (getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite) 
             || 
-            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null)) {
+            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
             return true;
         }
 
@@ -56,14 +53,14 @@ public class Pawn extends Piece {
 
         // The pawn is able to move 2 tile with its first move
         if (getStartY() >= 5 && toY < getY()) {
-            if (this.firstMove && getY() - toY <= 2) {
+            if (!isMoved && getY() - toY <= 2) {
                 return true;
             } else if (getY() - toY <= 1) {
                 return false;
             }
         }
         if (getStartY() <= 4 && toY > getY()) {
-            if (this.firstMove && toY - getY() <= 2) {
+            if (!isMoved && toY - getY() <= 2) {
                 return true;
             } else if (toY - getY() <= 1) {
                 return false;
@@ -110,9 +107,5 @@ public class Pawn extends Piece {
     private boolean isEnPassant(Board board) {
         // TODO
         return false;
-    }
-
-    public void setFirstMove(boolean firstMove) {
-        this.firstMove = firstMove;
     }
 }
