@@ -3,8 +3,11 @@ package chessgame.pieces;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JPanel;
+import java.awt.Graphics;
 
 import chessgame.Board;
+import chessgame.GamePanel;
 import chessgame.Move;
 
 /**
@@ -102,6 +105,20 @@ public abstract class Piece {
             board.removePiece(fromX, yRook);
             board.setTile(toX, toY + 1, rook);
         }
+    }
+
+    /**
+     * Draw image of the piece to panel. 
+     * @param g
+     * @param frame
+     */
+    public void draw(Graphics g, JPanel panel) {
+        GamePanel gamePanel = (GamePanel) panel;
+        g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
+            gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
+
+        panel.revalidate();
+        panel.repaint();
     }
 
     // getters and setters

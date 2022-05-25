@@ -1,5 +1,8 @@
 package chessgame;
 
+import java.awt.Graphics;
+import javax.swing.JPanel;
+
 import chessgame.pieces.Bishop;
 import chessgame.pieces.Knight;
 import chessgame.pieces.Piece;
@@ -9,34 +12,116 @@ import chessgame.pieces.Rook;
 public class Game {
     private Board board;
     private Piece chosen;
+    private boolean isCheckmate;
+
+    public static int SELECT = 0;
+    public static int MOVE = 1;
 
     public Game() {
         this.board = new Board();
+
+        generateWhiteMoves();
     }
 
     /**
-     * Choose the piece on the board with given x and y coordinates.
+     * Determine if the action should be {@code} selectPiece {@code} or
+     * {@code} move {@code}.
      * @param x
      * @param y
-     */ 
-    public void selectPiece(int x, int y) {
-        Piece piece = board.getPiece(x, y);
-        if (piece.isWhite() == board.isWhiteTurn()) {
-            chosen = board.getPiece(x, y);
+     * @return {@code} Game.SELECT {@code} or {@code} Game.MOVE {@code}
+     */
+    public int getAction(int x, int y) {
+        Piece target = board.getPiece(x, y);
+        if (target != null && target.isWhite() == isWhiteTurn()
+        ) {
+            return SELECT;
         } else {
-            chosen = null;
+            return MOVE;
         }
     }
 
     /**
-     * Move the chosen piece to the tile of given coordinates.
+     * Select the piece on tile or 
+     * move chosen piece to the tile.
+     * @param x
+     * @param y
+     */
+    public void selectOrMove(int x, int y) {
+        Piece target = board.getPiece(x, y);
+        if (target != null && target.isWhite() == isWhiteTurn()
+        ) {
+            selectPiece(x, y);
+        } else {
+            move(x, y);
+        }
+    }
+
+    /**
+     * Choose the piece on the board with given x and y coordinates.
+     * Assuming that given tile has piece of correct color.
+     * @param x
+     * @param y
+     */ 
+    public void selectPiece(int x, int y) {
+        chosen = board.getPiece(x, y);
+    }
+
+    /**
+     * Move the chosen piece to the tile of given coordinates if is valid.
      * @param x
      * @param y
      */
     public void move(int toX, int toY) {
-        if (chosen != null) {
+        if (chosen != null && isValidMove(toX, toY)) {
             chosen.move(toX, toY, board);
             board.incrementTurn();
+            changeSide();
+        }
+    }
+
+    /**
+     * Check if the chosen piece can move to the tile. 
+     * @param toX
+     * @param toY
+     * @return
+     */
+    private boolean isValidMove(int toX, int toY) {
+        Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
+        if (chosen.getLegalMoves().contains(move)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if checkmate and generate available moves of pieces.
+     */
+    public void changeSide() {
+        isCheckmate = board.checkmate();
+        if (isCheckmate) {
+            if (!isWhiteTurn()) {
+                generateWhiteMoves();
+            } else {
+                generateBlackMoves();
+            }
+        } else {    
+            if (isWhiteTurn()) {
+                generateWhiteMoves();
+            } else {
+                generateBlackMoves();
+            }
+        }
+    }
+
+    public void generateWhiteMoves() {
+        for (Piece piece : board.getwPieces()) {
+            piece.allLegalMoves(board);
+        }
+    }
+
+    public void generateBlackMoves() {
+        for (Piece piece : board.getbPieces()) {
+            piece.allLegalMoves(board);
         }
     }
 
@@ -48,33 +133,29 @@ public class Game {
      * 3 Bishop
      */
     public void promotion(int target) {
-        if (chosen instanceof Piece) {
-            int x = chosen.getX();
-            int y = chosen.getY();
-            boolean isWhite = chosen.isWhite();
+        int x = chosen.getX();
+        int y = chosen.getY();
+        boolean isWhite = chosen.isWhite();
 
-            board.removePiece(x, y);
+        board.removePiece(x, y);
 
-            Piece newPiece;
-            switch (target) {
-                case 1:
-                    newPiece = new Rook(x, y, isWhite);
-                    break;
-                case 2:
-                    newPiece = new Knight(x, y, isWhite);
-                    break;
-                case 3:
-                    newPiece = new Bishop(x, y, isWhite);
-                    break;
-                default:
-                    newPiece = new Queen(x, y, isWhite);
-                    break;
-            }
-
-            board.setTile(x, y, newPiece);
+        Piece newPiece;
+        switch (target) {
+            case 1:
+                newPiece = new Rook(x, y, isWhite);
+                break;
+            case 2:
+                newPiece = new Knight(x, y, isWhite);
+                break;
+            case 3:
+                newPiece = new Bishop(x, y, isWhite);
+                break;
+            default:
+                newPiece = new Queen(x, y, isWhite);
+                break;
         }
 
-        chosen = null;
+        board.setTile(x, y, newPiece);
     }
 
     /**
@@ -124,6 +205,24 @@ public class Game {
         } else if (prevMove.isPromotion()) {
             // do nothing
         }
+
+        changeSide();
+    }
+
+    public void draw(Graphics g, JPanel panel) {
+        board.draw(g, panel);
+    }
+
+    public boolean isWhiteTurn() {
+        return board.isWhiteTurn();
+    }
+
+    public void deselectChosen() {
+        this.chosen = null;
+    }
+
+    public boolean isCheckmate() {
+        return this.isCheckmate;
     }
 
     // getters and setters
