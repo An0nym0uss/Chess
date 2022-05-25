@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import javax.swing.JPanel;
+import java.awt.Graphics;
+import java.awt.Color;
 
 import chessgame.pieces.*;
 
@@ -38,39 +41,39 @@ public class Board {
      */
     public void setup() {
         // setup pawns
-        for (int yCord = 0; yCord < COLUMNS; yCord++) {
-            setTile(1, yCord, new Pawn(6, yCord, true));
-            setTile(6, yCord, new Pawn(1, yCord, false));
+        for (int col = 0; col < COLUMNS; col++) {
+            setTile(col, 6, new Pawn(col, 6, true));
+            setTile(col, 1, new Pawn(col, 1, false));
         }
 
         // setup kings
-        wKing =  new King(7, 4, true);
-        setTile(7, 4, wKing);
+        wKing =  new King(4, 7, true);
+        setTile(4, 7, wKing);
         
-        bKing = new King(0, 4, false);
-        setTile(0, 4, bKing);
+        bKing = new King(4, 0, false);
+        setTile(4, 0, bKing);
 
         // setup queens
-        setTile(7, 3, new Queen(7, 3, true));
-        setTile(0, 3, new Queen(0, 3, false));
+        setTile(3, 7, new Queen(3, 7, true));
+        setTile(3, 0, new Queen(3, 0, false));
 
         // setup rooks
-        setTile(7, 0, new Rook(7, 0, true));
+        setTile(0, 7, new Rook(0, 7, true));
         setTile(7, 7, new Rook(7, 7, true));
         setTile(0, 0, new Rook(0, 0, false));
-        setTile(0, 7, new Rook(0, 7, false));
+        setTile(7, 0, new Rook(7, 0, false));
 
         // setup knights
-        setTile(7, 1, new Knight(7, 1, true));
-        setTile(7, 6, new Knight(7, 6, true));
-        setTile(0, 1, new Knight(0, 1, false));
-        setTile(0, 6, new Knight(0, 6, false));
+        setTile(1, 7, new Knight(1, 7, true));
+        setTile(6, 7, new Knight(6, 7, true));
+        setTile(1, 0, new Knight(1, 0, false));
+        setTile(6, 0, new Knight(6, 0, false));
 
         // setup bishops
-        setTile(7, 2, new Bishop(7, 2, true));
-        setTile(7, 5, new Bishop(7, 5, true));
-        setTile(0, 2, new Bishop(0, 2, false));
-        setTile(0, 5, new Bishop(0, 5, false));
+        setTile(2, 7, new Bishop(2, 7, true));
+        setTile(5, 7, new Bishop(5, 7, true));
+        setTile(2, 0, new Bishop(2, 0, false));
+        setTile(5, 0, new Bishop(5, 0, false));
     }
 
     /**
@@ -120,6 +123,35 @@ public class Board {
     }
 
     /**
+     * Draw tiles and pieces on the board
+     * @param g
+     * @param frame
+     */
+    public void draw(Graphics g, JPanel panel) {
+        // draw tiles
+        GamePanel gamePanel = (GamePanel) panel;
+        for (int x = 0; x < 8; x++) {
+			for (int y = 0; y < 8; y++) {
+				if ((x + y) % 2 == 1) {
+					g.setColor(new Color(125, 147, 93));
+				} else {
+					g.setColor(new Color(235, 235, 211));
+				}
+				g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
+                    gamePanel.getTileWidth(), gamePanel.getTileWidth());
+			}
+		}
+
+        // draw pieces
+        for (Piece piece : wPieces) {
+            piece.draw(g, panel);
+        }
+        for (Piece piece : bPieces) {
+            piece.draw(g, panel);
+        }
+    }
+
+    /**
      * If turn is even (including 0), it's white's turn.
      * @return
      */
@@ -128,10 +160,12 @@ public class Board {
     }
 
     /**
-     * Check if the game is in checkmate.
+     * Check if the game is in checkmate and 
+     * generate available moves of pieces that can be done by
+     * current side (determined by isWhiteTurn).
      * @return
      */
-    public boolean checkMate() {
+    public boolean checkmate() {
         return false;
     }
 

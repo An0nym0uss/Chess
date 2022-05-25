@@ -20,6 +20,28 @@ public class Move {
         this(fromX, fromY, toX, toY, piece);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Move other = (Move) obj;
+        if (this.fromX == other.fromX && this.fromY == other.fromY &&
+            this.toX == other.toX && this.toY == other.toY &&
+            this.piece == other.piece
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // getters and setters
+
     /**
      * @return the piece
      */
