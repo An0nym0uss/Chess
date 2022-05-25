@@ -23,7 +23,7 @@ public class Pawn extends Piece {
     @Override
     public boolean canMove(int toX, int toY, Board board) {
         // toggle off first move
-        if (!isMoved && this.y != this.getStartX()) {
+        if (!isMoved && this.y != this.getStartY()) {
             this.isMoved = true;
         }
 
@@ -73,8 +73,8 @@ public class Pawn extends Piece {
     private boolean isObstructed(int toX, int toY, Board board) {
         // Case when the pawn is of the color that start at the top
         if (getStartY() >= 5) {
-            for (int i = 1; i < Board.ROWS; i++) {
-                if (board.getPiece(getX(), getY() + i) != null && toY >= getY() + i) {
+            for (int i = 1; i < Board.ROWS - getY(); i++) {
+                if (board.getPiece(getX(), getY() - i) != null && toY <= getY() - i) {
                     return true;
                 }
             }
@@ -90,8 +90,8 @@ public class Pawn extends Piece {
         return false;
     }
 
-    public boolean isPromotable(int x, int y, Board board) {
-        if (y == board.ROWS) {
+    public boolean isPromotable() {
+        if (this.getY() == Board.ROWS || this.getY() == 0) {
             return true;
         }
         return false;

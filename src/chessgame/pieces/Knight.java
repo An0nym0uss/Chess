@@ -26,13 +26,13 @@ public class Knight extends Piece {
             return false;
         }
         if (Math.abs(toX - getX()) == 2 && Math.abs(toY - getY()) == 1) {
-            if (board.getPiece(toX, toY).isWhite == this.isWhite) {
+            if (board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite == this.isWhite) {
                 return false;
             }
             return true;
         }
         if (Math.abs(toX - getX()) == 1 && Math.abs(toY - getY()) == 2) {
-            if (board.getPiece(toX, toY).isWhite == this.isWhite) {
+            if (board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite == this.isWhite) {
                 return false;
             }
             return true;
