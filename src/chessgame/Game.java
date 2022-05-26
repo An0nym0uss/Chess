@@ -2,6 +2,7 @@ package chessgame;
 
 import java.awt.Graphics;
 import javax.swing.JPanel;
+import java.awt.Color;
 
 import chessgame.pieces.Bishop;
 import chessgame.pieces.Knight;
@@ -210,7 +211,7 @@ public class Game {
     }
 
     public void draw(Graphics g, JPanel panel) {
-        board.draw(g, panel);
+        board.draw(g, panel, chosen);
     }
 
     public boolean isWhiteTurn() {

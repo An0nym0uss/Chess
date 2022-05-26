@@ -27,6 +27,12 @@ public class Board {
     private Integer turn;
     private Map<Integer, Piece> deadPieces = new HashMap<>();
 
+    // define colors
+    private static Color WHITE_TILE = new Color(235, 235, 211);
+    private static Color BLACK_TILE = new Color(125, 147, 93);
+    private static Color HIGHLIGHT_TILE = new Color(245, 245, 50, 100);
+    private static Color MOVE = new Color(90, 90, 90, 200);
+    private static Color CAPTURE = new Color(220, 30, 140, 200);
 
     public Board() {
         tiles = new Piece[ROWS][COLUMNS];
@@ -127,20 +133,24 @@ public class Board {
      * @param g
      * @param frame
      */
-    public void draw(Graphics g, JPanel panel) {
+    public void draw(Graphics g, JPanel panel, Piece chosen) {
         // draw tiles
         GamePanel gamePanel = (GamePanel) panel;
         for (int x = 0; x < 8; x++) {
 			for (int y = 0; y < 8; y++) {
 				if ((x + y) % 2 == 1) {
-					g.setColor(new Color(125, 147, 93));
+					g.setColor(BLACK_TILE);
 				} else {
-					g.setColor(new Color(235, 235, 211));
+					g.setColor(WHITE_TILE);
 				}
 				g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
                     gamePanel.getTileWidth(), gamePanel.getTileWidth());
 			}
 		}
+
+        if (chosen != null) {
+            highlightTile(g, panel, chosen);
+        }
 
         // draw pieces
         for (Piece piece : wPieces) {
@@ -148,6 +158,52 @@ public class Board {
         }
         for (Piece piece : bPieces) {
             piece.draw(g, panel);
+        }
+
+        if (chosen != null) {
+            drawValidMoves(g, panel, chosen);
+        }
+    }
+
+    /**
+     * Highlight the tile occupied by given piece
+     * @param g
+     * @param panel
+     * @param chosen
+     */
+    private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
+        GamePanel gamePanel = (GamePanel) panel;
+        int x = chosen.getX();
+        int y = chosen.getY();
+        // yellow with 40% transparency
+        g.setColor(HIGHLIGHT_TILE);
+        g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
+            gamePanel.getTileWidth(), gamePanel.getTileWidth());
+    }
+
+    /**
+     * Draw valid moves of chosen piece.
+     * @param g
+     * @param panel
+     * @param chosen
+     */
+    private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
+        GamePanel gamePanel = (GamePanel) panel;
+
+        for (Move move : chosen.getLegalMoves()) {
+            int x = move.getToX();
+            int y = move.getToY();
+            if (getPiece(x, y) == null) {
+                g.setColor(MOVE);
+            } else {
+                g.setColor(CAPTURE);
+            }
+
+            int size = gamePanel.getTileWidth();
+            int diameter = gamePanel.getTileWidth() / 2;
+            int offset_2 = (int) (2 * diameter * 0.41421);
+            int offset = (int) ((size * 1.41421 - diameter - offset_2) / 2); 
+            g.fillOval(x * size + offset, y * size + offset, diameter, diameter);
         }
     }
 

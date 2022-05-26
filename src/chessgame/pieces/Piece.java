@@ -59,6 +59,7 @@ public abstract class Piece {
         } else {
             // capture enemy piece
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
+            board.removePiece(toX, toY);
             board.removePiece(fromX, fromY);
             board.setTile(toX, toY, this);
         }
@@ -123,9 +124,6 @@ public abstract class Piece {
         GamePanel gamePanel = (GamePanel) panel;
         g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
             gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
-
-        panel.revalidate();
-        panel.repaint();
     }
 
     // getters and setters
