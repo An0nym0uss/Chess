@@ -22,49 +22,64 @@ public class Bishop extends Piece {
 
     @Override
     public boolean canMove(int toX, int toY, Board board) {
-        if (isObstructed(toX, toY, board)) {
+        if (toX == this.getX() && toY == this.getY()) {
             return false;
         }
-
         if (Math.abs(toX - this.getX()) == Math.abs(toY - this.getY())) {
-            return true;
+            if (isObstructed(toX, toY, board)) {
+                return false;
+            } else {
+                return true;
+            }
         }
         return false;
     }
 
     private boolean isObstructed(int toX, int toY, Board board) {
-        for (int i = 1; i < Math.min(Math.min(getX(),getY()),Math.min(1-getX(),1-getY())); i++) {
-            if (board.getPiece(getX() + i, getY() + i) != null && this.isWhite == board.getPiece(getX() + i, getY() + i).isWhite && toY >= getY() + i
-            ||
-            board.getPiece(getX() + i, getY() + i) != null && this.isWhite != board.getPiece(getX() + i, getY() + i).isWhite && toY > getY() + i) {
-                return true;
-            }
+        if (board.getPiece(toX, toY) != null && this.isWhite == board.getPiece(toX, toY).isWhite) {
+            return true;
         }
 
-        for (int i = 1; i < Math.min(Math.min(getX(), getY()), Math.min(1 - getX(), 1 - getY())); i++) {
-            if (board.getPiece(getX() - i, getY() + i) != null && this.isWhite == board.getPiece(getX() - i, getY() + i).isWhite && toY >= getY() + i
-            ||
-            board.getPiece(getX() - i, getY() + i) != null && this.isWhite != board.getPiece(getX() - i, getY() + i).isWhite && toY > getY() + i) {
-                return true;
+        if (toY > getY() && toX > getX()) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY - i == getY()) {
+                    return false;
+                }
+                if (board.getPiece(toX-i, toY-i) != null) {
+                    return true;
+                }
             }
         }
-
-        for (int i = 1; i < Math.min(Math.min(getX(), getY()), Math.min(1 - getX(), 1 - getY())); i++) {
-            if (board.getPiece(getX() - i, getY() - i) != null && this.isWhite == board.getPiece(getX() - i, getY() - i).isWhite && toY <= getY() - i
-            ||
-            board.getPiece(getX() - i, getY() - i) != null && this.isWhite != board.getPiece(getX() - i, getY() - i).isWhite && toY < getY() - i) {
-                return true;
+        if (toY > getY() && toX < getX()) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY - i == getY()) {
+                    return false;
+                }
+                if (board.getPiece(toX + i, toY - i) != null) {
+                    return true;
+                }
             }
         }
-
-        for (int i = 1; i < Math.min(Math.min(getX(), getY()), Math.min(1 - getX(), 1 - getY())); i++) {
-            if (board.getPiece(getX() + i, getY() - i) != null && this.isWhite == board.getPiece(getX() - i, getY() - i).isWhite && toY <= getY() - i
-            ||
-            board.getPiece(getX() + i, getY() - i) != null && this.isWhite != board.getPiece(getX() + i, getY() - i).isWhite && toY < getY() - i) {
-                return true;
+        if (toY < getY() && toX < getX()) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY + i == getY()) {
+                    return false;
+                }
+                if (board.getPiece(toX + i, toY + i) != null) {
+                    return true;
+                }
             }
         }
-
+        if (toY < getY() && toX > getX()) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY + i == getY()) {
+                    return false;
+                }
+                if (board.getPiece(toX - i, toY + i) != null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

@@ -27,10 +27,7 @@ public class Rook extends Piece {
         if (isObstructed(toX, toY, board)) {
             return false;
         }
-        if (toX == this.getX()) {
-            return true;
-        }
-        if (toY == this.getY()) {
+        if (toX == this.getX() || toY == this.getY()) {
             return true;
         }
         return false;
@@ -38,32 +35,35 @@ public class Rook extends Piece {
 
     private boolean isObstructed(int toX, int toY, Board board) {
         // obstructed by friendly piece including the tile the friendly piece is on, obstructed by hostile piece but not including the tile the hostile piece is on
-        for (int i = 1; i < Board.ROWS - getY(); i++) {
-            if ((board.getPiece(getX(), getY() + i) != null && this.isWhite == board.getPiece(getX(), getY() + i).isWhite && toY >= getY() + i)
-            ||
-            (board.getPiece(getX(), getY() + i) != null && this.isWhite != board.getPiece(getX(), getY() + i).isWhite && toY > getY() + i)) {
-                return true;
+        if (board.getPiece(toX, toY) != null && this.isWhite == board.getPiece(toX, toY).isWhite) {
+            return true;
+        }
+        if (toY > getY()) {
+            for (int i = getY() + 1; i < toY; i++) {
+                if (board.getPiece(getX(), i) != null) {
+                    return true;
+                }
             }
         }
-        for (int i = 1; i < getY(); i++) {
-            if ((board.getPiece(getX(), getY() - i) != null && this.isWhite == board.getPiece(getX(), getY() - i).isWhite && toY <= getY() - i)
-            ||
-            (board.getPiece(getX(), getY() - i) != null && this.isWhite != board.getPiece(getX(), getY() - i).isWhite && toY < getY() - i)) {
-                return true;
+        if (toY < getY()) {
+            for (int i = getY() - 1; i > toY; i--) {
+                if (board.getPiece(getX(), i) != null) {
+                    return true;
+                }
             }
         }
-        for (int i = 1; i < Board.COLUMNS - getX(); i++) {
-            if ((board.getPiece(getX() + i, getY()) != null && this.isWhite == board.getPiece(getX() + i, getY()).isWhite && toX >= getX() + i)
-            ||
-            (board.getPiece(getX() + i, getY()) != null && this.isWhite != board.getPiece(getX() + i, getY()).isWhite && toX > getX() + i)) {
-                return true;
+        if (toY > getX()) {
+            for (int i = getX() + 1; i < toX; i++) {
+                if (board.getPiece(i, getY()) != null) {
+                    return true;
+                }
             }
         }
-        for (int i = 1; i < getX(); i++) {
-            if ((board.getPiece(getX() - i, getY()) != null && this.isWhite == board.getPiece(getX() - i, getY()).isWhite && toY <= getX() - i)
-            ||
-            (board.getPiece(getX() - i, getY()) != null && this.isWhite != board.getPiece(getX() - i, getY()).isWhite && toY < getX() - i)) {
-                return true;
+        if (toY < getX()) {
+            for (int i = getX() - 1; i > toX; i--) {
+                if (board.getPiece(i, getY()) != null) {
+                    return true;
+                }
             }
         }
         

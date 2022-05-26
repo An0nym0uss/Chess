@@ -33,7 +33,8 @@ public class pawnTest {
 
     public static void main(String[] args) {
         Board board = new Board();
-        Piece pawn = board.getPiece(1, 6);
+        Piece pawn = board.getPiece(1, 1);
+        pawn.move(1, 5, board);
         pawn.allLegalMoves(board);
         for (Move move : pawn.getLegalMoves()) {
             System.out.println(move.getToX());

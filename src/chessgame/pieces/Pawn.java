@@ -31,13 +31,13 @@ public class Pawn extends Piece {
         if (
             (getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)
             || 
-            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
+            (getStartY() >= 5 && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
             return true;
         }
         if (
             (getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite) 
             || 
-            (getStartY() >= getY() && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
+            (getStartY() <= 4 && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
             return true;
         }
 
@@ -55,37 +55,31 @@ public class Pawn extends Piece {
         if (getStartY() >= 5 && toY < getY()) {
             if (!isMoved && getY() - toY <= 2) {
                 return true;
-            } else if (getY() - toY <= 1) {
-                return false;
+            } else if (isMoved && getY() - toY <= 1) {
+                return true;
             }
         }
         if (getStartY() <= 4 && toY > getY()) {
             if (!isMoved && toY - getY() <= 2) {
                 return true;
-            } else if (toY - getY() <= 1) {
-                return false;
+            } else if (isMoved && toY - getY() <= 1) {
+                return true;
             }
         }
+
         return false;
     }
 
-
     private boolean isObstructed(int toX, int toY, Board board) {
         // Case when the pawn is of the color that start at the top
-        if (getStartY() >= 5) {
-            for (int i = 1; i < Board.ROWS - getY(); i++) {
-                if (board.getPiece(getX(), getY() - i) != null && toY <= getY() - i) {
-                    return true;
-                }
-            }
+        if (board.getPiece(toX, toY) != null) {
+            return true;
         }
-        // Case when the pawn is of the color that start at the bottom
-        if (getStartY() <= 4) {
-            for (int i = 1; i < Board.ROWS - getY(); i++) {
-                if (board.getPiece(getX(), getY() + i) != null && toY >= getY() + i) {
-                    return true;
-                }
-            }
+        if (getStartY() >= 5 && board.getPiece(getX(), getY() - 1) != null) {
+            return true;
+        }
+        if (getStartY() <= 4 && board.getPiece(getX(), getY() + 1) != null) {
+            return true;
         }
         return false;
     }
