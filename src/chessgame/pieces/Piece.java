@@ -22,6 +22,7 @@ public abstract class Piece {
     protected BufferedImage image;
     private int startX;
     private int startY;
+    private int turnFirstMoved;
 
     public Piece(int x, int y, boolean isWhite) {
         this.x = x;
@@ -30,6 +31,7 @@ public abstract class Piece {
         this.isMoved = false;
         this.startX = x;
         this.startY = y;
+        this.turnFirstMoved = 0;
     }
 
     public abstract boolean canMove(int toX, int toY, Board board);
@@ -67,6 +69,7 @@ public abstract class Piece {
         // store the movement
         Move move = new Move(fromX, fromY, toX, toY, this);
         board.getMoves().push(move);
+        this.isMoved = true;
     }
 
     /**
@@ -96,22 +99,22 @@ public abstract class Piece {
      * @param board
      */
     private void castling(int fromX, int fromY, int toX, int toY, Board board) {
-        if (toY - fromY == 2) {
+        if (toX - fromX == 2) {
             // Castle kingside
-            int yRook = toY + 1;
-            Piece rook = board.getPiece(fromX, yRook);
+            int xRook = toX + 1;
+            Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
-            board.removePiece(fromX, yRook);
-            board.setTile(toX, toY - 1, rook);
-        } else if (fromY - toY == 2) {
+            board.removePiece(xRook, fromY);
+            board.setTile(toX - 1, toY, rook);
+        } else if (fromX - toX == 2) {
             // Castle queenside
-            int yRook = 0;
-            Piece rook = board.getPiece(fromX, yRook);
+            int xRook = 0;
+            Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
-            board.removePiece(fromX, yRook);
-            board.setTile(toX, toY + 1, rook);
+            board.removePiece(xRook, fromY);
+            board.setTile(toX + 1, toY, rook);
         }
     }
 
@@ -171,6 +174,13 @@ public abstract class Piece {
     }
 
     /**
+     * @param isMoved the isMoved to set
+     */
+    public void setMoved(boolean isMoved) {
+        this.isMoved = isMoved;
+    }
+
+    /**
      * @return the legalMoves
      */
     public List<Move> getLegalMoves() {
@@ -183,5 +193,19 @@ public abstract class Piece {
 
     public int getStartY() {
         return this.startY;
+    }
+
+    /**
+     * @return the turnFirstMoved
+     */
+    public int getTurnFirstMoved() {
+        return turnFirstMoved;
+    }
+
+    /**
+     * @param turnFirstMoved the turnFirstMoved to set
+     */
+    public void setTurnFirstMoved(int turnFirstMoved) {
+        this.turnFirstMoved = turnFirstMoved;
     }
 }
