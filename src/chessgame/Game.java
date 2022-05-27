@@ -88,6 +88,21 @@ public class Game {
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
         if (chosen.getLegalMoves().contains(move)) {
+            int fromX = chosen.getX();
+            int fromY = chosen.getY();
+            chosen.move(toX, toY, board);
+            Piece deadPiece = board.getDeadPieces().get(board.getTurn());
+            if (this.board.isChecked(chosen.isWhite())) {
+                chosen.move(fromX, fromY, board);
+                if (deadPiece != null) {
+                    board.setTile(toX, toY, deadPiece);
+                }
+                return false;
+            }
+            chosen.move(fromX, fromY, board);
+            if (deadPiece != null) {
+                board.setTile(toX, toY, deadPiece);
+            }
             return true;
         }
         return false;

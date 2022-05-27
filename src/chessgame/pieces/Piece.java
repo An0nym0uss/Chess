@@ -60,6 +60,7 @@ public abstract class Piece {
             // capture enemy piece
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
             board.removePiece(fromX, fromY);
+            board.removePiece(toX, toY);
             board.setTile(toX, toY, this);
         }
 
