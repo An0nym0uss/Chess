@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 
 import chessgame.Board;
+import chessgame.Move;
 
 public class Pawn extends Piece {
 
@@ -25,6 +26,10 @@ public class Pawn extends Piece {
         // toggle off first move
         if (!isMoved && this.y != this.getStartY()) {
             this.isMoved = true;
+        }
+
+        if (isEnPassant(toX, toY, board)) {
+            return true;
         }
 
         // The pawn is able to move diagonally for 1 tile when attacking
@@ -93,13 +98,44 @@ public class Pawn extends Piece {
 
     /**
      * Check if there is available En Passant move.
-     * En Passant llows an enemy pawn that has just advanced two squares
+     * En Passant allows an enemy pawn that has just advanced two squares
      * to be captured by a horizontally adjacent pawn.
      * 
      * @param board
      */
-    private boolean isEnPassant(Board board) {
-        // TODO
-        return false;
+    private boolean isEnPassant(int toX, int toY, Board board) {
+        // target tile is not empty
+        if (board.getPiece(toX, toY) != null) {
+            return false;
+        }
+
+        // target tile is not diagnally forward
+        if (isWhite && !(toY == y - 1 && (toX == x + 1 || toX == x - 1))) {
+            return false;
+        } else if (!isWhite && !(toY == y + 1 && (toX == x + 1 || toX == x - 1))) {
+            return false;
+        }
+
+        // last move is not enemy pawn
+        if (board.getMoves().empty()) {
+            return false;
+        }
+        Move move = board.getMoves().peek();
+        Piece piece = move.getPiece();
+        if (!(piece instanceof Pawn) || piece.isWhite == this.isWhite) {
+            return false;
+        }
+
+        // enemy pawn did not move two tiles forward
+        if (move.getToY() != move.getFromY() + 2 && move.getToY() != move.getFromY() - 2) {
+            return false;
+        }
+
+        // enemy pawn is not next to this pawn
+        if (piece.getY() != y || piece.getX() != toX) {
+            return false;
+        }
+
+        return true;
     }
 }

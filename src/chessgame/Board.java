@@ -40,6 +40,11 @@ public class Board {
         setup();
     }
 
+    public Board(boolean empty) {
+        tiles = new Piece[ROWS][COLUMNS];
+        turn = 0;
+    }
+
     /**
      * Initialise the board to put pieces on tiles.
      * Black pieces on the top (x = 0 || 1)

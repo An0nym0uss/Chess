@@ -23,6 +23,10 @@ public class Game {
         generateWhiteMoves();
     }
 
+    public Game(boolean empty) {
+        this.board = new Board(true);
+    }
+
     /**
      * Select the piece on tile or 
      * move chosen piece to the tile.
@@ -149,6 +153,11 @@ public class Game {
      * Recover the board to pevious step.
      */
     public void takeBackMove() {
+        if (board.getTurn() == 0) {
+            // do nothing
+            return;
+        }
+
         board.decrementTurn();
 
         Move prevMove = board.getMoves().pop();
@@ -171,7 +180,7 @@ public class Game {
 
         // recover captured piece
         if (deadPiece != null) {
-            board.setTile(toX, toY, deadPiece);
+            board.setTile(deadPiece.getX(), deadPiece.getY(), deadPiece);
         }
 
         if (prevMove.isCastling()) {
