@@ -227,7 +227,96 @@ public class Board {
      * @return
      */
     public boolean checkmate() {
+        if (isChecked(true)) {
+            for (int i = 0; i < Board.ROWS; i++) {
+                for (int j = 0; j < Board.COLUMNS; j++) {
+                    Piece piece = this.getPiece(i, j);
+                    if (piece != null && piece.isWhite() == true) {
+                        piece.allLegalMoves(this);
+                        if (piece.getLegalMoves().isEmpty()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        if (isChecked(false)) {
+            for (int i = 0; i < Board.ROWS; i++) {
+                for (int j = 0; j < Board.COLUMNS; j++) {
+                    Piece piece = this.getPiece(i, j);
+                    if (piece != null && piece.isWhite() == false) {
+                        piece.allLegalMoves(this);
+                        if (piece.getLegalMoves().isEmpty()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
+    }
+
+    /**
+     * Chenck if the given side is checked
+     * 
+     * @param isW
+     * @return
+     */
+    public boolean isChecked(boolean isW) {
+        Piece king;
+        if (isW) {
+            king = getWking(this);
+        } else {
+            king = getBking(this);
+        }
+        for (int i = 0; i < Board.ROWS; i++) {
+            for (int j = 0; j < Board.COLUMNS; j++) {
+                Piece piece = this.getPiece(i, j);
+                if (piece != null && piece.isWhite() != isW) {
+                    piece.allLegalMoves(this);
+                    for (Move move : piece.getLegalMoves()) {
+                        if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return the white king
+     * 
+     * @param board
+     * @return
+     */
+    public Piece getWking(Board board) {
+        for (int i = 0; i < Board.ROWS; i++) {
+            for (int j = 0; j < Board.COLUMNS; j++) {
+                if (board.getPiece(i, j) != null && board.getPiece(i, j).isWhite() && board.getPiece(i, j) instanceof King) {
+                    return board.getPiece(i, j);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the Black king
+     * 
+     * @param board
+     * @return
+     */
+    public Piece getBking(Board board) {
+        for (int i = 0; i < Board.ROWS; i++) {
+            for (int j = 0; j < Board.COLUMNS; j++) {
+                if (board.getPiece(i, j) != null && !board.getPiece(i, j).isWhite() && board.getPiece(i, j) instanceof King) {
+                    return board.getPiece(i, j);
+                }
+            }
+        }
+        return null;
     }
 
     /**
