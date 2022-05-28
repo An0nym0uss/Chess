@@ -79,17 +79,21 @@ public class Game {
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
         if (chosen.getLegalMoves().contains(move)) {
+            // Move the chosen piece to the imput coordinate for the purpose of checking if the move will remove the chekc status of the king, if it will not, it is not a valid move
             int fromX = chosen.getX();
             int fromY = chosen.getY();
             chosen.move(toX, toY, board);
             Piece deadPiece = board.getDeadPieces().get(board.getTurn());
+            // chekc if the king is checked
             if (this.board.isChecked(chosen.isWhite())) {
+                // Move the chose piece back to its original position and revive the dead piece if theres any that was lost durng the process
                 chosen.move(fromX, fromY, board);
                 if (deadPiece != null) {
                     board.setTile(toX, toY, deadPiece);
                 }
                 return false;
             }
+            // Move the chose piece back to its original position and revive the dead piece if theres any that was lost durng the process
             chosen.move(fromX, fromY, board);
             if (deadPiece != null) {
                 board.setTile(toX, toY, deadPiece);
