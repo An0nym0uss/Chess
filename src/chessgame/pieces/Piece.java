@@ -22,6 +22,7 @@ public abstract class Piece {
     protected BufferedImage image;
     private int startX;
     private int startY;
+    private int turnFirstMoved;
 
     public Piece(int x, int y, boolean isWhite) {
         this.x = x;
@@ -30,6 +31,7 @@ public abstract class Piece {
         this.isMoved = false;
         this.startX = x;
         this.startY = y;
+        this.turnFirstMoved = 0;
     }
 
     public abstract boolean canMove(int toX, int toY, Board board);
@@ -47,13 +49,19 @@ public abstract class Piece {
         int fromY = this.y;
         this.x = toX;
         this.y = toY;
-        if (board.getPiece(toX, toY) == null) {
-            // occupy empty tile
-            board.removePiece(fromX, fromY);
-            board.setTile(toX, toY, this);
+        if (!this.isMoved) {
+            turnFirstMoved = board.getTurn();
+            isMoved = true;
+        }
 
+        if (board.getPiece(toX, toY) == null) {
+            // pawn en passant move
+            if (this instanceof Pawn) {
+                enPassant(fromX, fromY, toX, toY, board);
+            }
+
+            // king castling
             if (this instanceof King) {
-                // castling
                 castling(fromX, fromY, toX, toY, board);
             }
         } else {
@@ -63,6 +71,10 @@ public abstract class Piece {
             board.removePiece(toX, toY);
             board.setTile(toX, toY, this);
         }
+
+        // place piece to new tile
+        board.removePiece(fromX, fromY);
+        board.setTile(toX, toY, this);
 
         // store the movement
         Move move = new Move(fromX, fromY, toX, toY, this);
@@ -85,6 +97,23 @@ public abstract class Piece {
         }
     }
 
+    private void enPassant(int fromX, int fromY, int toX, int toY, Board board) {
+        // check if target tile is empty
+        if (board.getPiece(toX, toY) != null) {
+            // target tile not empty, do nothing
+            return;
+        }
+
+        // capture enemy pawn if is diagnally forward
+        if (isWhite && toY == fromY - 1 && (toX - fromX == 1 || fromX - toX == 1)) {
+            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
+            board.removePiece(toX, fromY);
+        } else if (!isWhite && toY == fromY + 1 && (toX - fromX == 1 || fromX - toX == 1)) {
+            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
+            board.removePiece(toX, fromY);
+        }
+    }
+
     /**
      * Castling consists of moving the king two squares towards a rook,
      * then placing the rook on the other side of the king, adjacent to it.
@@ -96,22 +125,22 @@ public abstract class Piece {
      * @param board
      */
     private void castling(int fromX, int fromY, int toX, int toY, Board board) {
-        if (toY - fromY == 2) {
+        if (toX - fromX == 2) {
             // Castle kingside
-            int yRook = toY + 1;
-            Piece rook = board.getPiece(fromX, yRook);
+            int xRook = toX + 1;
+            Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
-            board.removePiece(fromX, yRook);
-            board.setTile(toX, toY - 1, rook);
-        } else if (fromY - toY == 2) {
+            board.removePiece(xRook, fromY);
+            board.setTile(toX - 1, toY, rook);
+        } else if (fromX - toX == 2) {
             // Castle queenside
-            int yRook = 0;
-            Piece rook = board.getPiece(fromX, yRook);
+            int xRook = 0;
+            Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
-            board.removePiece(fromX, yRook);
-            board.setTile(toX, toY + 1, rook);
+            board.removePiece(xRook, fromY);
+            board.setTile(toX + 1, toY, rook);
         }
     }
 
@@ -124,9 +153,6 @@ public abstract class Piece {
         GamePanel gamePanel = (GamePanel) panel;
         g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
             gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
-
-        panel.revalidate();
-        panel.repaint();
     }
 
     // getters and setters
@@ -174,6 +200,13 @@ public abstract class Piece {
     }
 
     /**
+     * @param isMoved the isMoved to set
+     */
+    public void setMoved(boolean isMoved) {
+        this.isMoved = isMoved;
+    }
+
+    /**
      * @return the legalMoves
      */
     public List<Move> getLegalMoves() {
@@ -186,5 +219,19 @@ public abstract class Piece {
 
     public int getStartY() {
         return this.startY;
+    }
+
+    /**
+     * @return the turnFirstMoved
+     */
+    public int getTurnFirstMoved() {
+        return turnFirstMoved;
+    }
+
+    /**
+     * @param turnFirstMoved the turnFirstMoved to set
+     */
+    public void setTurnFirstMoved(int turnFirstMoved) {
+        this.turnFirstMoved = turnFirstMoved;
     }
 }
