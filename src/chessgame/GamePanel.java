@@ -1,11 +1,11 @@
 package chessgame;
 
 import java.awt.Graphics;
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.awt.Dimension;
 
 import chessgame.pieces.Pawn;
 
@@ -14,15 +14,16 @@ public class GamePanel extends JPanel {
     private int tileWidth;  // each tile is a square
     private Game game;
 
-    GamePanel(int width) {
+    GamePanel(int width, Game game) {
         this.width = width;
         tileWidth = width / 8;
 
         this.setFocusable(true);
         this.addMouseListener(new Listner());
         this.addMouseMotionListener(new Listner());
+        this.setPreferredSize(new Dimension(width, width));
 
-        game = new Game();
+        this.game = game;
     }
 
     @Override
@@ -36,6 +37,13 @@ public class GamePanel extends JPanel {
      */
     public int getTileWidth() {
         return tileWidth;
+    }
+
+    /**
+     * @param game the game to set
+     */
+    public void setGame(Game game) {
+        this.game = game;
     }
 
     class Listner extends MouseAdapter {

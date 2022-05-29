@@ -23,21 +23,8 @@ public class Game {
         generateWhiteMoves();
     }
 
-    /**
-     * Determine if the action should be {@code} selectPiece {@code} or
-     * {@code} move {@code}.
-     * @param x
-     * @param y
-     * @return {@code} Game.SELECT {@code} or {@code} Game.MOVE {@code}
-     */
-    public int getAction(int x, int y) {
-        Piece target = board.getPiece(x, y);
-        if (target != null && target.isWhite() == isWhiteTurn()
-        ) {
-            return SELECT;
-        } else {
-            return MOVE;
-        }
+    public Game(boolean empty) {
+        this.board = new Board(true);
     }
 
     /**
@@ -73,6 +60,11 @@ public class Game {
      */
     public void move(int toX, int toY) {
         if (chosen != null && isValidMove(toX, toY)) {
+            if (chosen.getTurnFirstMoved() == 0) {
+                chosen.setMoved(true);
+                chosen.setTurnFirstMoved(board.getTurn());
+            }
+
             chosen.move(toX, toY, board);
             board.incrementTurn();
             changeSide();
@@ -88,6 +80,15 @@ public class Game {
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
         if (chosen.getLegalMoves().contains(move)) {
+            // Move the chosen piece to the imput coordinate for the purpose of checking if the move will remove the chekc status of the king, if it will not, it is not a valid move
+            chosen.move(toX, toY, board);
+            board.incrementTurn();
+            // chekc if the king is checked
+            if (this.board.isChecked(chosen.isWhite())) {
+                takeBackMove();
+                return false;
+            }
+            takeBackMove();
             return true;
         }
         return false;
@@ -162,6 +163,11 @@ public class Game {
      * Recover the board to pevious step.
      */
     public void takeBackMove() {
+        if (board.getTurn() == 0) {
+            // do nothing
+            return;
+        }
+
         board.decrementTurn();
 
         Move prevMove = board.getMoves().pop();
@@ -177,40 +183,42 @@ public class Game {
         piece.setY(fromY);
         board.removePiece(toX, toY);
         board.setTile(fromX, fromY, piece);
+        if (piece.getTurnFirstMoved() == board.getTurn()) {
+            piece.setMoved(false);
+            piece.setTurnFirstMoved(0);
+        }
 
         // recover captured piece
         if (deadPiece != null) {
-            board.setTile(toX, toY, deadPiece);
+            board.setTile(deadPiece.getX(), deadPiece.getY(), deadPiece);
         }
 
         if (prevMove.isCastling()) {
             // move rook back to its place
-            if (toY - fromY == 2) {
+            if (toX == fromX + 2) {
                 // Castle kingside
-                int yRook = toY - 1;
-                Piece rook = board.getPiece(toX, yRook);
+                int xRook = toX - 1;
+                Piece rook = board.getPiece(xRook, toY);
     
                 // move rook
-                board.removePiece(toX, yRook);
-                board.setTile(fromX, toY + 1, rook);
-            } else if (fromY - toY == 2) {
+                rook.setX(7);
+                board.removePiece(xRook, toY);
+                board.setTile(7, fromY, rook);
+            } else if (toX == fromX -  2) {
                 // Castle queenside
-                int yRook = toY + 1;
-                Piece rook = board.getPiece(toX, yRook);
+                int xRook = toX + 1;
+                Piece rook = board.getPiece(xRook, toY);
     
                 // move rook
-                board.removePiece(toX, yRook);
-                board.setTile(fromX, 0, rook);
+                rook.setX(0);
+                board.removePiece(xRook, toY);
+                board.setTile(0, fromY, rook);
             }
-        } else if (prevMove.isPromotion()) {
-            // do nothing
         }
-
-        changeSide();
     }
 
     public void draw(Graphics g, JPanel panel) {
-        board.draw(g, panel);
+        board.draw(g, panel, chosen);
     }
 
     public boolean isWhiteTurn() {
