@@ -23,70 +23,58 @@ public class Pawn extends Piece {
 
     @Override
     public boolean canMove(int toX, int toY, Board board) {
-        // toggle off first move
-        if (!isMoved && this.y != this.getStartY()) {
-            this.isMoved = true;
-        }
-
         if (isEnPassant(toX, toY, board)) {
             return true;
         }
 
-        // The pawn is able to move diagonally for 1 tile when attacking
-        if (
-            (getStartY() >= 5 && toX == getX() - 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)
-            || 
-            (getStartY() >= 5 && toX == getX() + 1 && toY == getY() - 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
-            return true;
-        }
-        if (
-            (getStartY() <= 4 && toX == getX() - 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite) 
-            || 
-            (getStartY() <= 4 && toX == getX() + 1 && toY == getY() + 1 && board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != this.isWhite)) {
-            return true;
-        }
-
-        // The pawn is unable to move horizontally without having a piece availbe for an attack
-        if (getStartX() != toX) {
+        if (toX == this.x + 1 || toX == this.x - 1) {
+            // pawn moving diagnolly
+            if (isWhite && toY != this.y - 1) {
+                return false;
+            } else if (!isWhite && toY != this.y + 1) {
+                return false;
+            }
+            // target tile is not occupied by enemy piece
+            if (board.getPiece(toX, toY) == null || board.getPiece(toX, toY).isWhite == isWhite) {
+                return false;
+            }
+        } else if ((isWhite && toY == this.y - 1) || (!isWhite && toY == this.y + 1)) {
+            // moving one tile forward
+            if (toX != this.x) {
+                return false;
+            }
+            // target tile is not empty
+            if (board.getPiece(toX, toY) != null) {
+                return false;
+            }
+        } else if ((isWhite && toY == this.y - 2) || (!isWhite && toY == this.y + 2)) {
+            // moving two tiles forward
+            if (toX != this.x) {
+                return false;
+            }
+            // pawn has moved
+            if (isMoved) {
+                return false;
+            }
+            // pawn is obsetructed by other pieces
+            if (isWhite) {
+                if (board.getPiece(toX, toY) != null || 
+                    board.getPiece(this.x, this.y - 1) != null
+                ) {
+                    return false;
+                }
+            } else {
+                if (board.getPiece(toX, toY) != null || 
+                    board.getPiece(this.x, this.y + 1) != null
+                ) {
+                    return false;
+                }
+            }
+        } else {
             return false;
         }
 
-        // The pawn is unable to advance beyond and including the tile occupied by a piece of any color 
-        if (isObstructed(toX, toY, board)) {
-            return false;
-        }
-
-        // The pawn is able to move 2 tile with its first move
-        if (getStartY() >= 5 && toY < getY()) {
-            if (!isMoved && getY() - toY <= 2) {
-                return true;
-            } else if (isMoved && getY() - toY <= 1) {
-                return true;
-            }
-        }
-        if (getStartY() <= 4 && toY > getY()) {
-            if (!isMoved && toY - getY() <= 2) {
-                return true;
-            } else if (isMoved && toY - getY() <= 1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isObstructed(int toX, int toY, Board board) {
-        // Case when the pawn is of the color that start at the top
-        if (board.getPiece(toX, toY) != null) {
-            return true;
-        }
-        if (getStartY() >= 5 && board.getPiece(getX(), getY() - 1) != null) {
-            return true;
-        }
-        if (getStartY() <= 4 && board.getPiece(getX(), getY() + 1) != null) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     public boolean isPromotable() {

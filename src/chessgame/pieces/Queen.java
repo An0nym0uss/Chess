@@ -61,14 +61,14 @@ public class Queen extends Piece{
                 }
             }
         }
-        if (toY > getX()) {
+        if (toX > getX()) {
             for (int i = getX() + 1; i < toX; i++) {
                 if (board.getPiece(i, getY()) != null) {
                     return true;
                 }
             }
         }
-        if (toY < getX()) {
+        if (toX < getX()) {
             for (int i = getX() - 1; i > toX; i--) {
                 if (board.getPiece(i, getY()) != null) {
                     return true;

@@ -5,19 +5,19 @@ import chessgame.pieces.Piece;
 public class Move {
     private Piece piece;
     private int fromX, fromY, toX, toY;
-    private boolean isCastling, isPromotion;
+    private boolean isCastling;
 
     public Move(int fromX, int fromY, int toX, int toY, Piece piece) {
+        this(fromX, fromY, toX, toY, piece, false);
+    }
+
+    public Move(int fromX, int fromY, int toX, int toY, Piece piece, boolean isCastling) {
         this.fromX = fromX;
         this.fromY = fromY;
         this.toX = toX;
         this.toY = toY;
         this.piece = piece;
-    }
-
-    public Move(int fromX, int fromY, int toX, int toY, 
-                Piece piece, boolean isCastling, boolean isPromotion) {
-        this(fromX, fromY, toX, toY, piece);
+        this.isCastling = isCastling;
     }
 
     @Override
@@ -82,26 +82,5 @@ public class Move {
      */
     public boolean isCastling() {
         return isCastling;
-    }
-
-    /**
-     * @param isCastling the isCastling to set
-     */
-    public void setCastling(boolean isCastling) {
-        this.isCastling = isCastling;
-    }
-
-    /**
-     * @return the isPromotion
-     */
-    public boolean isPromotion() {
-        return isPromotion;
-    }
-
-    /**
-     * @param isPromotion the isPromotion to set
-     */
-    public void setPromotion(boolean isPromotion) {
-        this.isPromotion = isPromotion;
     }
 }

@@ -61,6 +61,7 @@ public class Game {
     public void move(int toX, int toY) {
         if (chosen != null && isValidMove(toX, toY)) {
             if (chosen.getTurnFirstMoved() == 0) {
+                chosen.setMoved(true);
                 chosen.setTurnFirstMoved(board.getTurn());
             }
 
@@ -80,24 +81,14 @@ public class Game {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
         if (chosen.getLegalMoves().contains(move)) {
             // Move the chosen piece to the imput coordinate for the purpose of checking if the move will remove the chekc status of the king, if it will not, it is not a valid move
-            int fromX = chosen.getX();
-            int fromY = chosen.getY();
             chosen.move(toX, toY, board);
-            Piece deadPiece = board.getDeadPieces().get(board.getTurn());
+            board.incrementTurn();
             // chekc if the king is checked
             if (this.board.isChecked(chosen.isWhite())) {
-                // Move the chose piece back to its original position and revive the dead piece if theres any that was lost durng the process
-                chosen.move(fromX, fromY, board);
-                if (deadPiece != null) {
-                    board.setTile(toX, toY, deadPiece);
-                }
+                takeBackMove();
                 return false;
             }
-            // Move the chose piece back to its original position and revive the dead piece if theres any that was lost durng the process
-            chosen.move(fromX, fromY, board);
-            if (deadPiece != null) {
-                board.setTile(toX, toY, deadPiece);
-            }
+            takeBackMove();
             return true;
         }
         return false;
@@ -204,28 +195,26 @@ public class Game {
 
         if (prevMove.isCastling()) {
             // move rook back to its place
-            if (toY - fromY == 2) {
+            if (toX == fromX + 2) {
                 // Castle kingside
                 int xRook = toX - 1;
                 Piece rook = board.getPiece(xRook, toY);
     
                 // move rook
+                rook.setX(7);
                 board.removePiece(xRook, toY);
-                board.setTile(toX + 1, fromY, rook);
-            } else if (fromY - toY == 2) {
+                board.setTile(7, fromY, rook);
+            } else if (toX == fromX -  2) {
                 // Castle queenside
                 int xRook = toX + 1;
                 Piece rook = board.getPiece(xRook, toY);
     
                 // move rook
+                rook.setX(0);
                 board.removePiece(xRook, toY);
                 board.setTile(0, fromY, rook);
             }
-        } else if (prevMove.isPromotion()) {
-            // do nothing
         }
-
-        changeSide();
     }
 
     public void draw(Graphics g, JPanel panel) {

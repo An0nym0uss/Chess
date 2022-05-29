@@ -47,12 +47,9 @@ public abstract class Piece {
     public void move(int toX, int toY, Board board) {
         int fromX = this.x;
         int fromY = this.y;
+        boolean isCastling = false;
         this.x = toX;
         this.y = toY;
-        if (!this.isMoved) {
-            turnFirstMoved = board.getTurn();
-            isMoved = true;
-        }
 
         if (board.getPiece(toX, toY) == null) {
             // pawn en passant move
@@ -62,7 +59,7 @@ public abstract class Piece {
 
             // king castling
             if (this instanceof King) {
-                castling(fromX, fromY, toX, toY, board);
+                isCastling = castling(fromX, fromY, toX, toY, board);
             }
         } else {
             // capture enemy piece
@@ -77,7 +74,7 @@ public abstract class Piece {
         board.setTile(toX, toY, this);
 
         // store the movement
-        Move move = new Move(fromX, fromY, toX, toY, this);
+        Move move = new Move(fromX, fromY, toX, toY, this, isCastling);
         board.getMoves().push(move);
     }
 
@@ -124,24 +121,31 @@ public abstract class Piece {
      * @param toY
      * @param board
      */
-    private void castling(int fromX, int fromY, int toX, int toY, Board board) {
-        if (toX - fromX == 2) {
+    private boolean castling(int fromX, int fromY, int toX, int toY, Board board) {
+        if (toX == fromX + 2) {
             // Castle kingside
-            int xRook = toX + 1;
+            int xRook = 7;
             Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
+            rook.setX(toX - 1);
             board.removePiece(xRook, fromY);
             board.setTile(toX - 1, toY, rook);
-        } else if (fromX - toX == 2) {
+
+            return true;
+        } else if (toX == fromX - 2) {
             // Castle queenside
             int xRook = 0;
             Piece rook = board.getPiece(xRook, fromY);
 
             // move rook
+            rook.setX(toX + 1);
             board.removePiece(xRook, fromY);
             board.setTile(toX + 1, toY, rook);
+
+            return true;
         }
+        return false;
     }
 
     /**

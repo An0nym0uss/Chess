@@ -8,6 +8,8 @@ import java.util.Stack;
 import javax.swing.JPanel;
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.BasicStroke;
 
 import chessgame.pieces.*;
 
@@ -19,8 +21,8 @@ public class Board {
     public static int ROWS = 8;
     public static int COLUMNS = 8;
     private Piece[][] tiles;
-    private Piece wKing;
-    private Piece bKing;
+    private King wKing;
+    private King bKing;
     private List<Piece> wPieces = new ArrayList<>();
     private List<Piece> bPieces = new ArrayList<>();
     private Stack<Move> moves = new Stack<>();
@@ -33,6 +35,7 @@ public class Board {
     private static Color HIGHLIGHT_TILE = new Color(245, 245, 50, 100);
     private static Color MOVE = new Color(90, 90, 90, 200);
     private static Color CAPTURE = new Color(220, 30, 140, 200);
+    private static Color CHECKED = new Color(235, 20, 20, 100);
 
     public Board() {
         tiles = new Piece[ROWS][COLUMNS];
@@ -153,6 +156,8 @@ public class Board {
 			}
 		}
 
+        drawCheckedKing(g, panel);
+
         if (chosen != null) {
             highlightTile(g, panel, chosen);
         }
@@ -213,6 +218,28 @@ public class Board {
     }
 
     /**
+     * Mark the king tile red if it's checked. 
+     * @param g
+     * @param panel
+     */
+    private void drawCheckedKing(Graphics g, JPanel panel) {
+        GamePanel gamePanel = (GamePanel) panel;
+        int width = gamePanel.getTileWidth();
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(width / 15));
+        g2.setColor(CHECKED);
+
+        if (wKing != null && wKing.isChecked()) {
+            g2.drawRect(wKing.getX() * width, wKing.getY() * width, width, width);
+        }
+
+        if (bKing != null && bKing.isChecked()) {
+            g2.drawRect(bKing.getX() * width, bKing.getY() * width, width, width);
+        }
+    }
+
+    /**
      * If turn is even (including 0), it's white's turn.
      * @return
      */
@@ -263,7 +290,7 @@ public class Board {
      * @return
      */
     public boolean isChecked(boolean isW) {
-        Piece king;
+        King king;
         if (isW) {
             king = getWking(this);
         } else {
@@ -276,12 +303,14 @@ public class Board {
                     piece.allLegalMoves(this);
                     for (Move move : piece.getLegalMoves()) {
                         if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
+                            king.setChecked(true);
                             return true;
                         }
                     }
                 }
             }
         }
+        king.setChecked(false);
         return false;
     }
 
@@ -291,12 +320,10 @@ public class Board {
      * @param board
      * @return
      */
-    public Piece getWking(Board board) {
-        for (int i = 0; i < Board.ROWS; i++) {
-            for (int j = 0; j < Board.COLUMNS; j++) {
-                if (board.getPiece(i, j) != null && board.getPiece(i, j).isWhite() && board.getPiece(i, j) instanceof King) {
-                    return board.getPiece(i, j);
-                }
+    public King getWking(Board board) {
+        for (Piece piece : wPieces) {
+            if (piece instanceof King) {
+                return (King) piece;
             }
         }
         return null;
@@ -308,12 +335,10 @@ public class Board {
      * @param board
      * @return
      */
-    public Piece getBking(Board board) {
-        for (int i = 0; i < Board.ROWS; i++) {
-            for (int j = 0; j < Board.COLUMNS; j++) {
-                if (board.getPiece(i, j) != null && !board.getPiece(i, j).isWhite() && board.getPiece(i, j) instanceof King) {
-                    return board.getPiece(i, j);
-                }
+    public King getBking(Board board) {
+        for (Piece piece : bPieces) {
+            if (piece instanceof King) {
+                return (King) piece;
             }
         }
         return null;
