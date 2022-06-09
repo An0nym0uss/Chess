@@ -69,7 +69,13 @@ public class GamePanel extends JPanel {
                 int x = xCord / tileWidth;
                 int y = yCord / tileWidth;
 
-                game.selectOrMove(x, y);
+                int choice = game.selectOrMove(x, y);
+
+                if (choice == Game.MOVE) {
+                    promotion();
+                    game.deselectChosen();
+                    checkmate();
+                }
 
                 revalidate();
                 repaint();
@@ -88,6 +94,7 @@ public class GamePanel extends JPanel {
                 game.move(x, y);
                 promotion();
                 game.deselectChosen();
+                checkmate();
 
                 revalidate();
                 repaint();
@@ -114,6 +121,26 @@ public class GamePanel extends JPanel {
 
                     game.promotion(choice);
                 }
+            }
+        }
+
+        /**
+         * Pop up a message saying which side wins if checmate.
+         */
+        private void checkmate() {
+            String str = "";
+            Boolean isCheckmate = false;
+            if (game.isWhiteWin()) {
+                isCheckmate = true;
+                str = "White";
+            } else if (game.isBlackWin()) {
+                isCheckmate = true;
+                str = "Black";
+            }
+
+            if (isCheckmate) {
+                String message = str + " has won!";
+                JOptionPane.showMessageDialog(null, message);
             }
         }
     }

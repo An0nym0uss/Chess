@@ -32,14 +32,17 @@ public class Game {
      * move chosen piece to the tile.
      * @param x
      * @param y
+     * @return SELECT if select; MOVE if move.
      */
-    public void selectOrMove(int x, int y) {
+    public int selectOrMove(int x, int y) {
         Piece target = board.getPiece(x, y);
         if (target != null && target.isWhite() == isWhiteTurn()
         ) {
             selectPiece(x, y);
+            return SELECT;
         } else {
             move(x, y);
+            return MOVE;
         }
     }
 
@@ -229,11 +232,25 @@ public class Game {
         this.chosen = null;
     }
 
-    public boolean isCheckmate() {
-        return this.isCheckmate;
+    public boolean isWhiteWin() {
+        if (isCheckmate && board.getBKing().isChecked()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isBlackWin() {
+        if (isCheckmate && board.getWKing().isChecked()) {
+            return true;
+        }
+        return false;
     }
 
     // getters and setters
+
+    public boolean isCheckmate() {
+        return this.isCheckmate;
+    }
 
     /**
      * @return the board
