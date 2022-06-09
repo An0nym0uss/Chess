@@ -292,9 +292,9 @@ public class Board {
     public boolean isChecked(boolean isW) {
         King king;
         if (isW) {
-            king = getWking(this);
+            king = getWkingPiece(this);
         } else {
-            king = getBking(this);
+            king = getBkingPiece(this);
         }
         for (int i = 0; i < Board.ROWS; i++) {
             for (int j = 0; j < Board.COLUMNS; j++) {
@@ -320,7 +320,7 @@ public class Board {
      * @param board
      * @return
      */
-    public King getWking(Board board) {
+    public King getWkingPiece(Board board) {
         for (Piece piece : wPieces) {
             if (piece instanceof King) {
                 return (King) piece;
@@ -335,7 +335,7 @@ public class Board {
      * @param board
      * @return
      */
-    public King getBking(Board board) {
+    public King getBkingPiece(Board board) {
         for (Piece piece : bPieces) {
             if (piece instanceof King) {
                 return (King) piece;
@@ -393,6 +393,14 @@ public class Board {
      */
     public Integer getTurn() {
         return turn;
+    }
+
+    public King getWKing() {
+        return this.wKing;
+    }
+
+    public King getBKing() {
+        return this.bKing;
     }
 
     /**
