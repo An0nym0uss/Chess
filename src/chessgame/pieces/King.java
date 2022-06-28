@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.Math;
 
 import chessgame.Board;
-import chessgame.Move;
 
 public class King extends Piece {
 

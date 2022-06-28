@@ -125,6 +125,15 @@ public class Board {
      * @param y
      */
     public void removePiece(int x, int y) {
+        tiles[x][y] = null;
+    }
+
+    /**
+     * Remove the piece in the tile and remove from the pieces list
+     * @param x
+     * @param y
+     */
+    public void removePieceFromBoard(int x, int y) {
         Piece piece = getPiece(x, y);
         if (piece != null) {
             if (piece.isWhite()) {
@@ -134,6 +143,69 @@ public class Board {
             }
         }
         tiles[x][y] = null;
+    }
+
+    /**
+     * Recover the board to pevious step.
+     */
+    public void takeBackMove() {
+        if (getTurn() == 0) {
+            // do nothing
+            return;
+        }
+
+        decrementTurn();
+
+        Move prevMove = getMoves().pop();
+        int fromX = prevMove.getFromX();
+        int fromY = prevMove.getFromY();
+        int toX = prevMove.getToX();
+        int toY = prevMove.getToY();
+        Piece piece = prevMove.getPiece();
+        Piece deadPiece = getDeadPieces().get(getTurn());
+
+        // take back last movement
+        if (prevMove.isPromotion() && !(getPiece(toX, toY) instanceof Pawn)) {
+            removePieceFromBoard(toX, toY);
+        } else {
+            removePiece(toX, toY);
+        }
+
+        piece.setX(fromX);
+        piece.setY(fromY);
+        setTile(fromX, fromY, piece);
+        if (piece.getTurnFirstMoved() == getTurn()) {
+            piece.setMoved(false);
+            piece.setTurnFirstMoved(0);
+        }
+
+        // recover captured piece
+        if (deadPiece != null) {
+            setTile(deadPiece.getX(), deadPiece.getY(), deadPiece);
+        }
+
+        if (prevMove.isCastling()) {
+            // move rook back to its place
+            if (toX == fromX + 2) {
+                // Castle kingside
+                int xRook = toX - 1;
+                Piece rook = getPiece(xRook, toY);
+    
+                // move rook
+                rook.setX(7);
+                removePiece(xRook, toY);
+                setTile(7, fromY, rook);
+            } else if (toX == fromX -  2) {
+                // Castle queenside
+                int xRook = toX + 1;
+                Piece rook = getPiece(xRook, toY);
+    
+                // move rook
+                rook.setX(0);
+                removePiece(xRook, toY);
+                setTile(0, fromY, rook);
+            }
+        }
     }
 
     /**
@@ -200,7 +272,7 @@ public class Board {
     private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
         GamePanel gamePanel = (GamePanel) panel;
 
-        for (Move move : chosen.getLegalMoves()) {
+        for (Move move : chosen.getValidMoves()) {
             int x = move.getToX();
             int y = move.getToY();
             if (getPiece(x, y) == null) {
@@ -247,101 +319,32 @@ public class Board {
         return (turn & 1) == 0 ? true : false;
     }
 
-    /**
-     * Check if the game is in checkmate and 
-     * generate available moves of pieces that can be done by
-     * current side (determined by isWhiteTurn).
-     * @return
-     */
-    public boolean checkmate() {
-        if (isChecked(true)) {
-            for (int i = 0; i < Board.ROWS; i++) {
-                for (int j = 0; j < Board.COLUMNS; j++) {
-                    Piece piece = this.getPiece(i, j);
-                    if (piece != null && piece.isWhite() == true) {
-                        piece.allLegalMoves(this);
-                        if (piece.getLegalMoves().isEmpty()) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        if (isChecked(false)) {
-            for (int i = 0; i < Board.ROWS; i++) {
-                for (int j = 0; j < Board.COLUMNS; j++) {
-                    Piece piece = this.getPiece(i, j);
-                    if (piece != null && piece.isWhite() == false) {
-                        piece.allLegalMoves(this);
-                        if (piece.getLegalMoves().isEmpty()) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Chenck if the given side is checked
-     * 
-     * @param isW
-     * @return
-     */
-    public boolean isChecked(boolean isW) {
-        King king;
-        if (isW) {
-            king = getWkingPiece(this);
+    public void setKingChecked() {
+        if (isWhiteTurn()) {
+            wKing.setChecked(isChecked(wKing));
         } else {
-            king = getBkingPiece(this);
+            bKing.setChecked(isChecked(bKing));
         }
-        for (int i = 0; i < Board.ROWS; i++) {
-            for (int j = 0; j < Board.COLUMNS; j++) {
-                Piece piece = this.getPiece(i, j);
-                if (piece != null && piece.isWhite() != isW) {
-                    piece.allLegalMoves(this);
-                    for (Move move : piece.getLegalMoves()) {
-                        if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
-                            king.setChecked(true);
-                            return true;
-                        }
-                    }
+    }
+
+    public boolean isChecked(King king) {
+        List<Piece> oponentPieces;
+        if (king.isWhite()) {
+            oponentPieces = this.getbPieces();
+        } else {
+            oponentPieces = this.getwPieces();
+        }
+
+        for (Piece piece : oponentPieces) {
+            piece.allLegalMoves(this);
+            for (Move move : piece.getLegalMoves()) {
+                if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
+                    return true;
                 }
             }
         }
-        king.setChecked(false);
+
         return false;
-    }
-
-    /**
-     * Return the white king
-     * 
-     * @param board
-     * @return
-     */
-    public King getWkingPiece(Board board) {
-        for (Piece piece : wPieces) {
-            if (piece instanceof King) {
-                return (King) piece;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Return the Black king
-     * 
-     * @param board
-     * @return
-     */
-    public King getBkingPiece(Board board) {
-        for (Piece piece : bPieces) {
-            if (piece instanceof King) {
-                return (King) piece;
-            }
-        }
-        return null;
     }
 
     /**

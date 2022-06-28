@@ -70,15 +70,14 @@ public class GamePanel extends JPanel {
                 int y = yCord / tileWidth;
 
                 int choice = game.selectOrMove(x, y);
-
                 if (choice == Game.MOVE) {
                     promotion();
                     game.deselectChosen();
-                    checkmate();
                 }
 
                 revalidate();
                 repaint();
+                checkmateMessage();
             }
         }
         
@@ -91,13 +90,20 @@ public class GamePanel extends JPanel {
                 int x = xCord / tileWidth;
                 int y = yCord / tileWidth;
 
+                if (game.getChosen() != null && 
+                    game.getChosen().getX() == x && game.getChosen().getY() == y
+                ) {
+                    // mouse still on selected piece, do nothing
+                    return;
+                }
+
                 game.move(x, y);
                 promotion();
                 game.deselectChosen();
-                checkmate();
-
+                
                 revalidate();
                 repaint();
+                checkmateMessage();
             }
         }
 
@@ -120,6 +126,7 @@ public class GamePanel extends JPanel {
                         null, options, options[0]);
 
                     game.promotion(choice);
+                    game.checkmate();
                 }
             }
         }
@@ -127,19 +134,20 @@ public class GamePanel extends JPanel {
         /**
          * Pop up a message saying which side wins if checmate.
          */
-        private void checkmate() {
-            String str = "";
-            Boolean isCheckmate = false;
-            if (game.isWhiteWin()) {
-                isCheckmate = true;
-                str = "White";
-            } else if (game.isBlackWin()) {
-                isCheckmate = true;
-                str = "Black";
+        private void checkmateMessage() {
+            Boolean isCheckmate = true;
+            String message = "";
+            if (game.getCheckmate() == Checkmate.WHITE_WINS) {
+                message = "Checkmate. White has won!";
+            } else if (game.getCheckmate() == Checkmate.BLACK_WINS) {
+                message = "Checkmate. Black has won!";
+            } else if (game.getCheckmate() == Checkmate.STALE_MATE) {
+                message = "Stalemate!";
+            } else {
+                isCheckmate = false;
             }
 
             if (isCheckmate) {
-                String message = str + " has won!";
                 JOptionPane.showMessageDialog(null, message);
             }
         }

@@ -45,7 +45,7 @@ public class pawnTest {
         board.setTile(6, 1, other);
 
         // move white pawn
-        game.generateWhiteMoves();
+        game.generateAllWhiteMoves();
         game.selectPiece(1, 6);
         game.move(1, 4);
         assertEquals(4, wPawn.getY());

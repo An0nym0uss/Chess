@@ -1,10 +1,14 @@
 package chessgame;
 
 import java.awt.Graphics;
+import java.util.List;
+
 import javax.swing.JPanel;
 
 import chessgame.pieces.Bishop;
+import chessgame.pieces.King;
 import chessgame.pieces.Knight;
+import chessgame.pieces.Pawn;
 import chessgame.pieces.Piece;
 import chessgame.pieces.Queen;
 import chessgame.pieces.Rook;
@@ -12,15 +16,14 @@ import chessgame.pieces.Rook;
 public class Game {
     private Board board;
     private Piece chosen;
-    private boolean isCheckmate;
+    private int checkmate;
 
     public static int SELECT = 0;
     public static int MOVE = 1;
 
     public Game() {
         this.board = new Board();
-
-        generateWhiteMoves();
+        changeSide();
     }
 
     public Game(boolean empty) {
@@ -82,51 +85,62 @@ public class Game {
      */
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
-        if (chosen.getLegalMoves().contains(move)) {
-            // Move the chosen piece to the imput coordinate for the purpose of checking if the move will remove the chekc status of the king, if it will not, it is not a valid move
-            chosen.move(toX, toY, board);
-            board.incrementTurn();
-            // chekc if the king is checked
-            if (this.board.isChecked(chosen.isWhite())) {
-                takeBackMove();
-                return false;
-            }
-            takeBackMove();
+        if (chosen.getValidMoves().contains(move)) {
             return true;
         }
         return false;
     }
 
-    /**
-     * Check if checkmate and generate available moves of pieces.
-     */
-    public void changeSide() {
-        isCheckmate = board.checkmate();
-        if (isCheckmate) {
-            if (!isWhiteTurn()) {
-                generateWhiteMoves();
-            } else {
-                generateBlackMoves();
-            }
-        } else {    
-            if (isWhiteTurn()) {
-                generateWhiteMoves();
-            } else {
-                generateBlackMoves();
-            }
-        }
-    }
-
-    public void generateWhiteMoves() {
+    public void generateAllWhiteMoves() {
         for (Piece piece : board.getwPieces()) {
             piece.allLegalMoves(board);
         }
     }
 
-    public void generateBlackMoves() {
+    public void generateAllBlackMoves() {
         for (Piece piece : board.getbPieces()) {
             piece.allLegalMoves(board);
         }
+    }
+
+    /**
+     * Check if checkmate and generate available moves of pieces.
+     */
+    public void changeSide() {   
+        List<Piece> pieces;
+        King king;
+        if (isWhiteTurn()) {
+            pieces = board.getwPieces();
+            king = board.getWKing();
+
+            generateAllWhiteMoves();
+            for (Piece piece : pieces) {
+                piece.getValidMoves().clear();
+            }
+        } else {
+            pieces = board.getbPieces();
+            king = board.getBKing();
+
+            generateAllBlackMoves();
+            for (Piece piece : pieces) {
+                piece.getValidMoves().clear();
+            }
+        }
+
+        for (Piece piece : pieces) {
+            for (Move move : piece.getLegalMoves()) {
+                piece.move(move.getToX(), move.getToY(), board);
+                board.incrementTurn();
+
+                // valid if the king is not checked after the move
+                if (!board.isChecked(king)) {
+                    piece.getValidMoves().add(move);
+                }
+                board.takeBackMove();
+            }
+        }
+
+        checkmate();
     }
 
     /**
@@ -141,7 +155,7 @@ public class Game {
         int y = chosen.getY();
         boolean isWhite = chosen.isWhite();
 
-        board.removePiece(x, y);
+        board.removePieceFromBoard(x, y);
 
         Piece newPiece;
         switch (target) {
@@ -162,62 +176,16 @@ public class Game {
         board.setTile(x, y, newPiece);
     }
 
+    public void checkmate() {
+        board.setKingChecked();
+        checkmate = Checkmate.checkmate(board);
+    }
+
     /**
      * Recover the board to pevious step.
      */
     public void takeBackMove() {
-        if (board.getTurn() == 0) {
-            // do nothing
-            return;
-        }
-
-        board.decrementTurn();
-
-        Move prevMove = board.getMoves().pop();
-        int fromX = prevMove.getFromX();
-        int fromY = prevMove.getFromY();
-        int toX = prevMove.getToX();
-        int toY = prevMove.getToY();
-        Piece piece = prevMove.getPiece();
-        Piece deadPiece = board.getDeadPieces().get(board.getTurn());
-
-        // take back last movement
-        piece.setX(fromX);
-        piece.setY(fromY);
-        board.removePiece(toX, toY);
-        board.setTile(fromX, fromY, piece);
-        if (piece.getTurnFirstMoved() == board.getTurn()) {
-            piece.setMoved(false);
-            piece.setTurnFirstMoved(0);
-        }
-
-        // recover captured piece
-        if (deadPiece != null) {
-            board.setTile(deadPiece.getX(), deadPiece.getY(), deadPiece);
-        }
-
-        if (prevMove.isCastling()) {
-            // move rook back to its place
-            if (toX == fromX + 2) {
-                // Castle kingside
-                int xRook = toX - 1;
-                Piece rook = board.getPiece(xRook, toY);
-    
-                // move rook
-                rook.setX(7);
-                board.removePiece(xRook, toY);
-                board.setTile(7, fromY, rook);
-            } else if (toX == fromX -  2) {
-                // Castle queenside
-                int xRook = toX + 1;
-                Piece rook = board.getPiece(xRook, toY);
-    
-                // move rook
-                rook.setX(0);
-                board.removePiece(xRook, toY);
-                board.setTile(0, fromY, rook);
-            }
-        }
+        board.takeBackMove();
     }
 
     public void draw(Graphics g, JPanel panel) {
@@ -232,24 +200,20 @@ public class Game {
         this.chosen = null;
     }
 
-    public boolean isWhiteWin() {
-        if (isCheckmate && board.getBKing().isChecked()) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isBlackWin() {
-        if (isCheckmate && board.getWKing().isChecked()) {
-            return true;
-        }
-        return false;
-    }
-
     // getters and setters
 
-    public boolean isCheckmate() {
-        return this.isCheckmate;
+    /**
+     * @param checkmate the checkmate to set
+     */
+    public void setCheckmate(int checkmate) {
+        this.checkmate = checkmate;
+    }
+
+    /**
+     * @return the checkmate
+     */
+    public int getCheckmate() {
+        return checkmate;
     }
 
     /**

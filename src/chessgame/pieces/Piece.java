@@ -19,6 +19,7 @@ public abstract class Piece {
     protected boolean isWhite;
     protected boolean isMoved;
     protected List<Move> legalMoves = new ArrayList<>();
+    protected List<Move> validMoves = new ArrayList<>();
     protected BufferedImage image;
     private int startX;
     private int startY;
@@ -48,6 +49,7 @@ public abstract class Piece {
         int fromX = this.x;
         int fromY = this.y;
         boolean isCastling = false;
+        boolean isPromotion = false;
         this.x = toX;
         this.y = toY;
 
@@ -55,6 +57,9 @@ public abstract class Piece {
             // pawn en passant move
             if (this instanceof Pawn) {
                 enPassant(fromX, fromY, toX, toY, board);
+                if (((Pawn) this).isPromotable()) {
+                    isPromotion = true;
+                }
             }
 
             // king castling
@@ -64,9 +69,7 @@ public abstract class Piece {
         } else {
             // capture enemy piece
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
-            board.removePiece(fromX, fromY);
-            board.removePiece(toX, toY);
-            board.setTile(toX, toY, this);
+            board.removePieceFromBoard(toX, toY);
         }
 
         // place piece to new tile
@@ -74,7 +77,7 @@ public abstract class Piece {
         board.setTile(toX, toY, this);
 
         // store the movement
-        Move move = new Move(fromX, fromY, toX, toY, this, isCastling);
+        Move move = new Move(fromX, fromY, toX, toY, this, isCastling, isPromotion);
         board.getMoves().push(move);
     }
 
@@ -104,10 +107,10 @@ public abstract class Piece {
         // capture enemy pawn if is diagnally forward
         if (isWhite && toY == fromY - 1 && (toX - fromX == 1 || fromX - toX == 1)) {
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
-            board.removePiece(toX, fromY);
+            board.removePieceFromBoard(toX, fromY);
         } else if (!isWhite && toY == fromY + 1 && (toX - fromX == 1 || fromX - toX == 1)) {
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
-            board.removePiece(toX, fromY);
+            board.removePieceFromBoard(toX, fromY);
         }
     }
 
@@ -130,7 +133,7 @@ public abstract class Piece {
             // move rook
             rook.setX(toX - 1);
             board.removePiece(xRook, fromY);
-            board.setTile(toX - 1, toY, rook);
+            board.setTile(rook.getX(), rook.getY(), rook);
 
             return true;
         } else if (toX == fromX - 2) {
@@ -141,7 +144,7 @@ public abstract class Piece {
             // move rook
             rook.setX(toX + 1);
             board.removePiece(xRook, fromY);
-            board.setTile(toX + 1, toY, rook);
+            board.setTile(rook.getX(), rook.getY(), rook);
 
             return true;
         }
@@ -217,6 +220,13 @@ public abstract class Piece {
         return legalMoves;
     }
 
+    /**
+     * @return the validMoves
+     */
+    public List<Move> getValidMoves() {
+        return validMoves;
+    }
+
     public int getStartX() {
         return this.startX;
     }
@@ -237,5 +247,21 @@ public abstract class Piece {
      */
     public void setTurnFirstMoved(int turnFirstMoved) {
         this.turnFirstMoved = turnFirstMoved;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof Piece)) return false;
+        if (!this.getClass().equals(obj.getClass())) return false;
+        Piece other = (Piece) obj;
+        if (this.x == other.x && 
+            this.y == other.y && 
+            this.isWhite == other.isWhite) {
+            return true;
+        }
+
+        return false;
     }
 }

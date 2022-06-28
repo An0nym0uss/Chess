@@ -5,13 +5,13 @@ import chessgame.pieces.Piece;
 public class Move {
     private Piece piece;
     private int fromX, fromY, toX, toY;
-    private boolean isCastling;
+    private boolean isCastling, isPromotion;
 
     public Move(int fromX, int fromY, int toX, int toY, Piece piece) {
-        this(fromX, fromY, toX, toY, piece, false);
+        this(fromX, fromY, toX, toY, piece, false, false);
     }
 
-    public Move(int fromX, int fromY, int toX, int toY, Piece piece, boolean isCastling) {
+    public Move(int fromX, int fromY, int toX, int toY, Piece piece, boolean isCastling, boolean isPromotion) {
         this.fromX = fromX;
         this.fromY = fromY;
         this.toX = toX;
@@ -82,5 +82,12 @@ public class Move {
      */
     public boolean isCastling() {
         return isCastling;
+    }
+
+    /**
+     * @return the isPromotion
+     */
+    public boolean isPromotion() {
+        return isPromotion;
     }
 }
