@@ -11,6 +11,14 @@ public class Checkmate {
     public static final int BLACK_WINS = 2;
     public static final int STALE_MATE = 3;
 
+    /**
+     * Check if king is under checkmate.
+     * @param board chess board
+     * @return {@code Checkmate.CONTINUE}, 
+     *         {@code Checkmate.WHITE_WINS}, 
+     *         {@code Checkmate.BLACK_WINS}, or
+     *         {@code Checkmate.STALE_MATE}
+     */
     public static int checkmate(Board board) {
         List<Piece> pieces;
         King king;

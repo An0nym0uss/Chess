@@ -2,6 +2,9 @@ package chessgame;
 
 import chessgame.pieces.Piece;
 
+/**
+ * Class {@code Move} stores the movement of a chess piece.
+ */
 public class Move {
     private Piece piece;
     private int fromX, fromY, toX, toY;
@@ -18,6 +21,7 @@ public class Move {
         this.toY = toY;
         this.piece = piece;
         this.isCastling = isCastling;
+        this.isPromotion = isPromotion;
     }
 
     @Override

@@ -37,15 +37,17 @@ public class Board {
     private static Color CAPTURE = new Color(220, 30, 140, 200);
     private static Color CHECKED = new Color(235, 20, 20, 100);
 
+    
     public Board() {
-        tiles = new Piece[ROWS][COLUMNS];
-        turn = 0;
-        setup();
+        this(false);
     }
 
     public Board(boolean empty) {
         tiles = new Piece[ROWS][COLUMNS];
         turn = 0;
+        if (!empty) {
+            setup();
+        }
     }
 
     /**
@@ -91,10 +93,9 @@ public class Board {
     }
 
     /**
-     * Get the piece on the tile of given x and y coordinates
-     * @param x
-     * @param y
-     * @return
+     * @param x column
+     * @param y row
+     * @return the piece on the tile of given x and y coordinates
      */
     public Piece getPiece(int x, int y) {
         return tiles[x][y];
@@ -102,11 +103,15 @@ public class Board {
 
     /**
      * set the position of the piece to the tile
-     * @param x
-     * @param y
+     * @param x column
+     * @param y row
      * @param piece
      */
     public void setTile(int x, int y, Piece piece) {
+        if (tiles[x][y] != null) {
+            System.out.println(tiles[x][y] + " at x: " + x + ", y: " +
+                y + " is replaced by " + piece);
+        }
         tiles[x][y] = piece;
         if (piece.isWhite()) {
             if (!wPieces.contains(piece)) {
@@ -121,8 +126,8 @@ public class Board {
 
     /**
      * Remove the piece in the tile
-     * @param x
-     * @param y
+     * @param x column
+     * @param y row
      */
     public void removePiece(int x, int y) {
         tiles[x][y] = null;
@@ -130,8 +135,8 @@ public class Board {
 
     /**
      * Remove the piece in the tile and remove from the pieces list
-     * @param x
-     * @param y
+     * @param x column
+     * @param y row
      */
     public void removePieceFromBoard(int x, int y) {
         Piece piece = getPiece(x, y);
@@ -142,7 +147,7 @@ public class Board {
                 bPieces.remove(piece);
             }
         }
-        tiles[x][y] = null;
+        removePiece(x, y);
     }
 
     /**
@@ -162,10 +167,10 @@ public class Board {
         int toX = prevMove.getToX();
         int toY = prevMove.getToY();
         Piece piece = prevMove.getPiece();
-        Piece deadPiece = getDeadPieces().get(getTurn());
+        Piece deadPiece = getDeadPieces().remove(getTurn());
 
         // take back last movement
-        if (prevMove.isPromotion() && !(getPiece(toX, toY) instanceof Pawn)) {
+        if (prevMove.isPromotion()) {
             removePieceFromBoard(toX, toY);
         } else {
             removePiece(toX, toY);
@@ -209,7 +214,7 @@ public class Board {
     }
 
     /**
-     * Draw tiles and pieces on the board
+     * Draw tiles and pieces on the board.
      * @param g
      * @param frame
      */
@@ -248,10 +253,10 @@ public class Board {
     }
 
     /**
-     * Highlight the tile occupied by given piece
+     * Highlight the tile occupied by given piece.
      * @param g
      * @param panel
-     * @param chosen
+     * @param chosen given chess piece
      */
     private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
         GamePanel gamePanel = (GamePanel) panel;
@@ -267,7 +272,7 @@ public class Board {
      * Draw valid moves of chosen piece.
      * @param g
      * @param panel
-     * @param chosen
+     * @param chosen given chess piece
      */
     private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
         GamePanel gamePanel = (GamePanel) panel;
@@ -312,21 +317,24 @@ public class Board {
     }
 
     /**
-     * If turn is even (including 0), it's white's turn.
-     * @return
+     * @return {@code true} if is white's turn ({@code turn} is even)
      */
     public boolean isWhiteTurn() {
         return (turn & 1) == 0 ? true : false;
     }
 
+    /**
+     * Check if kings are being checked.
+     */
     public void setKingChecked() {
-        if (isWhiteTurn()) {
-            wKing.setChecked(isChecked(wKing));
-        } else {
-            bKing.setChecked(isChecked(bKing));
-        }
+        wKing.setChecked(isChecked(wKing));
+        bKing.setChecked(isChecked(bKing));
     }
 
+    /**
+     * @param king
+     * @return {@code} true} if king is being checked
+     */
     public boolean isChecked(King king) {
         List<Piece> oponentPieces;
         if (king.isWhite()) {
@@ -398,11 +406,31 @@ public class Board {
         return turn;
     }
 
+    /**
+     * @return white king, or {@code null} if not present
+     */
     public King getWKing() {
+        if (wKing == null) {
+            for (Piece piece : wPieces) {
+                if (piece instanceof King) {
+                    return (King) piece;
+                }
+            }
+        }
         return this.wKing;
     }
 
+    /**
+     * @return black king, or {@code null} if not present
+     */
     public King getBKing() {
+        if (bKing == null) {
+            for (Piece piece : bPieces) {
+                if (piece instanceof King) {
+                    return (King) piece;
+                }
+            }
+        }
         return this.bKing;
     }
 

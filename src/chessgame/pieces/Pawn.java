@@ -78,7 +78,7 @@ public class Pawn extends Piece {
     }
 
     public boolean isPromotable() {
-        if (this.getY() == Board.ROWS || this.getY() == 0) {
+        if (this.getY() == Board.ROWS - 1 || this.getY() == 0) {
             return true;
         }
         return false;

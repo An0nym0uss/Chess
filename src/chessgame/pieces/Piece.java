@@ -35,15 +35,21 @@ public abstract class Piece {
         this.turnFirstMoved = 0;
     }
 
+    /**
+     * Check if this piece can move to the tile. 
+     * @param toX target column
+     * @param toY target row
+     * @param board chess board
+     * @return {@code true} if given tile is an available move for this piece.
+     */
     public abstract boolean canMove(int toX, int toY, Board board);
 
     /**
      * Move the piece to the tile.
      * Assume that the position given is valid.
-     * 
-     * @param toX
-     * @param toY
-     * @param board
+     * @param toX column
+     * @param toY row
+     * @param board chess board
      */
     public void move(int toX, int toY, Board board) {
         int fromX = this.x;
@@ -53,23 +59,25 @@ public abstract class Piece {
         this.x = toX;
         this.y = toY;
 
+        // move to empty tile
         if (board.getPiece(toX, toY) == null) {
             // pawn en passant move
             if (this instanceof Pawn) {
                 enPassant(fromX, fromY, toX, toY, board);
-                if (((Pawn) this).isPromotable()) {
-                    isPromotion = true;
-                }
             }
 
             // king castling
             if (this instanceof King) {
                 isCastling = castling(fromX, fromY, toX, toY, board);
             }
-        } else {
+        } else if (board.getPiece(toX, toY).isWhite != this.isWhite) {
             // capture enemy piece
             board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
             board.removePieceFromBoard(toX, toY);
+        }
+
+        if (this instanceof Pawn && ((Pawn) this).isPromotable()) {
+            isPromotion = true;
         }
 
         // place piece to new tile
@@ -83,11 +91,10 @@ public abstract class Piece {
 
     /**
      * Store all possible moves can be made by this piece.
-     * 
      * @param board
      */
     public void allLegalMoves(Board board) {
-        legalMoves = new ArrayList<Move>();
+        legalMoves.clear();
         for (int i = 0; i < Board.ROWS; i++) {
             for (int j = 0; j < Board.COLUMNS; j++) {
                 if (canMove(i, j, board)) {
@@ -97,6 +104,14 @@ public abstract class Piece {
         }
     }
 
+    /**
+     * Pawn performs En Passant move if valid.
+     * @param fromX
+     * @param fromY
+     * @param toX
+     * @param toY
+     * @param board
+     */
     private void enPassant(int fromX, int fromY, int toX, int toY, Board board) {
         // check if target tile is empty
         if (board.getPiece(toX, toY) != null) {
@@ -117,7 +132,7 @@ public abstract class Piece {
     /**
      * Castling consists of moving the king two squares towards a rook,
      * then placing the rook on the other side of the king, adjacent to it.
-     * 
+     * This method places the rook next to king. 
      * @param fromX
      * @param fromY
      * @param toX
@@ -160,6 +175,23 @@ public abstract class Piece {
         GamePanel gamePanel = (GamePanel) panel;
         g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
             gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Piece other = (Piece) obj;
+        if (this.startX == other.startX && this.startY == other.startY) {
+            return true;
+        }
+
+        return false;
     }
 
     // getters and setters
@@ -247,21 +279,5 @@ public abstract class Piece {
      */
     public void setTurnFirstMoved(int turnFirstMoved) {
         this.turnFirstMoved = turnFirstMoved;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj == this) return true;
-        if (!(obj instanceof Piece)) return false;
-        if (!this.getClass().equals(obj.getClass())) return false;
-        Piece other = (Piece) obj;
-        if (this.x == other.x && 
-            this.y == other.y && 
-            this.isWhite == other.isWhite) {
-            return true;
-        }
-
-        return false;
     }
 }
