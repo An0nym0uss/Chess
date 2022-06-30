@@ -37,15 +37,17 @@ public class Board {
     private static Color CAPTURE = new Color(220, 30, 140, 200);
     private static Color CHECKED = new Color(235, 20, 20, 100);
 
+    
     public Board() {
-        tiles = new Piece[ROWS][COLUMNS];
-        turn = 0;
-        setup();
+        this(false);
     }
 
     public Board(boolean empty) {
         tiles = new Piece[ROWS][COLUMNS];
         turn = 0;
+        if (!empty) {
+            setup();
+        }
     }
 
     /**
@@ -91,10 +93,9 @@ public class Board {
     }
 
     /**
-     * Get the piece on the tile of given x and y coordinates
-     * @param x
-     * @param y
-     * @return
+     * @param x column
+     * @param y row
+     * @return the piece on the tile of given x and y coordinates
      */
     public Piece getPiece(int x, int y) {
         return tiles[x][y];
@@ -102,11 +103,15 @@ public class Board {
 
     /**
      * set the position of the piece to the tile
-     * @param x
-     * @param y
+     * @param x column
+     * @param y row
      * @param piece
      */
     public void setTile(int x, int y, Piece piece) {
+        if (tiles[x][y] != null) {
+            System.out.println(tiles[x][y] + " at x: " + x + ", y: " +
+                y + " is replaced by " + piece);
+        }
         tiles[x][y] = piece;
         if (piece.isWhite()) {
             if (!wPieces.contains(piece)) {
@@ -121,10 +126,19 @@ public class Board {
 
     /**
      * Remove the piece in the tile
-     * @param x
-     * @param y
+     * @param x column
+     * @param y row
      */
     public void removePiece(int x, int y) {
+        tiles[x][y] = null;
+    }
+
+    /**
+     * Remove the piece in the tile and remove from the pieces list
+     * @param x column
+     * @param y row
+     */
+    public void removePieceFromBoard(int x, int y) {
         Piece piece = getPiece(x, y);
         if (piece != null) {
             if (piece.isWhite()) {
@@ -133,11 +147,74 @@ public class Board {
                 bPieces.remove(piece);
             }
         }
-        tiles[x][y] = null;
+        removePiece(x, y);
     }
 
     /**
-     * Draw tiles and pieces on the board
+     * Recover the board to pevious step.
+     */
+    public void takeBackMove() {
+        if (getTurn() == 0) {
+            // do nothing
+            return;
+        }
+
+        decrementTurn();
+
+        Move prevMove = getMoves().pop();
+        int fromX = prevMove.getFromX();
+        int fromY = prevMove.getFromY();
+        int toX = prevMove.getToX();
+        int toY = prevMove.getToY();
+        Piece piece = prevMove.getPiece();
+        Piece deadPiece = getDeadPieces().remove(getTurn());
+
+        // take back last movement
+        if (prevMove.isPromotion() && !(getPiece(toX, toY) instanceof Pawn)) {
+            removePieceFromBoard(toX, toY);
+        } else {
+            removePiece(toX, toY);
+        }
+
+        piece.setX(fromX);
+        piece.setY(fromY);
+        setTile(fromX, fromY, piece);
+        if (piece.getTurnFirstMoved() == getTurn()) {
+            piece.setMoved(false);
+            piece.setTurnFirstMoved(0);
+        }
+
+        // recover captured piece
+        if (deadPiece != null) {
+            setTile(deadPiece.getX(), deadPiece.getY(), deadPiece);
+        }
+
+        if (prevMove.isCastling()) {
+            // move rook back to its place
+            if (toX == fromX + 2) {
+                // Castle kingside
+                int xRook = toX - 1;
+                Piece rook = getPiece(xRook, toY);
+    
+                // move rook
+                rook.setX(7);
+                removePiece(xRook, toY);
+                setTile(7, fromY, rook);
+            } else if (toX == fromX -  2) {
+                // Castle queenside
+                int xRook = toX + 1;
+                Piece rook = getPiece(xRook, toY);
+    
+                // move rook
+                rook.setX(0);
+                removePiece(xRook, toY);
+                setTile(0, fromY, rook);
+            }
+        }
+    }
+
+    /**
+     * Draw tiles and pieces on the board.
      * @param g
      * @param frame
      */
@@ -163,12 +240,8 @@ public class Board {
         }
 
         // draw pieces
-        for (Piece piece : wPieces) {
-            piece.draw(g, panel);
-        }
-        for (Piece piece : bPieces) {
-            piece.draw(g, panel);
-        }
+        wPieces.forEach(p -> p.draw(g, panel));
+        bPieces.forEach(p -> p.draw(g, panel));
 
         if (chosen != null) {
             drawValidMoves(g, panel, chosen);
@@ -176,10 +249,10 @@ public class Board {
     }
 
     /**
-     * Highlight the tile occupied by given piece
+     * Highlight the tile occupied by given piece.
      * @param g
      * @param panel
-     * @param chosen
+     * @param chosen given chess piece
      */
     private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
         GamePanel gamePanel = (GamePanel) panel;
@@ -195,12 +268,12 @@ public class Board {
      * Draw valid moves of chosen piece.
      * @param g
      * @param panel
-     * @param chosen
+     * @param chosen given chess piece
      */
     private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
         GamePanel gamePanel = (GamePanel) panel;
 
-        for (Move move : chosen.getLegalMoves()) {
+        for (Move move : chosen.getValidMoves()) {
             int x = move.getToX();
             int y = move.getToY();
             if (getPiece(x, y) == null) {
@@ -240,108 +313,36 @@ public class Board {
     }
 
     /**
-     * If turn is even (including 0), it's white's turn.
-     * @return
+     * @return {@code true} if is white's turn ({@code turn} is even)
      */
     public boolean isWhiteTurn() {
         return (turn & 1) == 0 ? true : false;
     }
 
     /**
-     * Check if the game is in checkmate and 
-     * generate available moves of pieces that can be done by
-     * current side (determined by isWhiteTurn).
-     * @return
+     * Check if kings are being checked.
      */
-    public boolean checkmate() {
-        if (isChecked(true)) {
-            for (int i = 0; i < Board.ROWS; i++) {
-                for (int j = 0; j < Board.COLUMNS; j++) {
-                    Piece piece = this.getPiece(i, j);
-                    if (piece != null && piece.isWhite() == true) {
-                        piece.allLegalMoves(this);
-                        if (piece.getLegalMoves().isEmpty()) {
-                            return true;
-                        }
-                    }
-                }
-            }
+    public void setKingsChecked() {
+        if (wKing != null) {
+            wKing.setChecked(isChecked(wKing));
         }
-        if (isChecked(false)) {
-            for (int i = 0; i < Board.ROWS; i++) {
-                for (int j = 0; j < Board.COLUMNS; j++) {
-                    Piece piece = this.getPiece(i, j);
-                    if (piece != null && piece.isWhite() == false) {
-                        piece.allLegalMoves(this);
-                        if (piece.getLegalMoves().isEmpty()) {
-                            return true;
-                        }
-                    }
-                }
-            }
+        if (bKing != null) {
+            bKing.setChecked(isChecked(bKing));
         }
-        return false;
     }
 
     /**
-     * Chenck if the given side is checked
-     * 
-     * @param isW
-     * @return
+     * @param king
+     * @return {@code} true} if king is being checked
      */
-    public boolean isChecked(boolean isW) {
-        King king;
-        if (isW) {
-            king = getWkingPiece(this);
-        } else {
-            king = getBkingPiece(this);
-        }
-        for (int i = 0; i < Board.ROWS; i++) {
-            for (int j = 0; j < Board.COLUMNS; j++) {
-                Piece piece = this.getPiece(i, j);
-                if (piece != null && piece.isWhite() != isW) {
-                    piece.allLegalMoves(this);
-                    for (Move move : piece.getLegalMoves()) {
-                        if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
-                            king.setChecked(true);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        king.setChecked(false);
-        return false;
-    }
+    public boolean isChecked(King king) {
+        List<Piece> oponentPieces = king.isWhite() ? getbPieces() : getwPieces();
 
-    /**
-     * Return the white king
-     * 
-     * @param board
-     * @return
-     */
-    public King getWkingPiece(Board board) {
-        for (Piece piece : wPieces) {
-            if (piece instanceof King) {
-                return (King) piece;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Return the Black king
-     * 
-     * @param board
-     * @return
-     */
-    public King getBkingPiece(Board board) {
-        for (Piece piece : bPieces) {
-            if (piece instanceof King) {
-                return (King) piece;
-            }
-        }
-        return null;
+        return oponentPieces.stream().anyMatch(p -> {
+            p.allLegalMoves(this);
+            return p.getLegalMoves().stream()
+                .anyMatch(m -> m.getToX() == king.getX() && m.getToY() == king.getY());
+        });
     }
 
     /**
@@ -395,12 +396,32 @@ public class Board {
         return turn;
     }
 
+    /**
+     * @return white king, or {@code null} if not present
+     */
     public King getWKing() {
-        return this.wKing;
+        if (wKing != null) {
+            return wKing;
+        }
+
+        return (King) wPieces.stream()
+            .filter(p -> p instanceof King)
+            .findFirst()
+            .orElse(null);
     }
 
+    /**
+     * @return black king, or {@code null} if not present
+     */
     public King getBKing() {
-        return this.bKing;
+        if (bKing != null) {
+            return bKing;
+        }
+
+        return (King) bPieces.stream()
+            .filter(p -> p instanceof King)
+            .findFirst()
+            .orElse(null);
     }
 
     /**

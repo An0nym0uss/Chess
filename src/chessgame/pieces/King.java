@@ -5,15 +5,14 @@ import java.io.IOException;
 import java.lang.Math;
 
 import chessgame.Board;
-import chessgame.Move;
 
 public class King extends Piece {
 
-    private boolean checked;
+    private boolean isChecked;
 
     public King(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
-        this.checked = false;
+        this.isChecked = false;
         try {
             if (isWhite) {
                 this.image = ImageIO.read(getClass().getResource(PieceImages.KING_W));
@@ -44,7 +43,7 @@ public class King extends Piece {
     }
     
     private boolean isCastling(int toX, int toY, Board board) {
-        if (this.isMoved || toY != y) {
+        if (isMoved || isChecked || toY != y) {
             return false;
         }
 
@@ -86,11 +85,11 @@ public class King extends Piece {
 
 
     public boolean isChecked() {
-        return this.checked;
+        return this.isChecked;
     }
 
-    public void setChecked(boolean checked) {
-        this.checked = checked;
+    public void setChecked(boolean isChecked) {
+        this.isChecked = isChecked;
     }
 
 }

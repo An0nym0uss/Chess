@@ -2,22 +2,26 @@ package chessgame;
 
 import chessgame.pieces.Piece;
 
+/**
+ * Class {@code Move} stores the movement of a chess piece.
+ */
 public class Move {
     private Piece piece;
     private int fromX, fromY, toX, toY;
-    private boolean isCastling;
+    private boolean isCastling, isPromotion;
 
     public Move(int fromX, int fromY, int toX, int toY, Piece piece) {
-        this(fromX, fromY, toX, toY, piece, false);
+        this(fromX, fromY, toX, toY, piece, false, false);
     }
 
-    public Move(int fromX, int fromY, int toX, int toY, Piece piece, boolean isCastling) {
+    public Move(int fromX, int fromY, int toX, int toY, Piece piece, boolean isCastling, boolean isPromotion) {
         this.fromX = fromX;
         this.fromY = fromY;
         this.toX = toX;
         this.toY = toY;
         this.piece = piece;
         this.isCastling = isCastling;
+        this.isPromotion = isPromotion;
     }
 
     @Override
@@ -82,5 +86,12 @@ public class Move {
      */
     public boolean isCastling() {
         return isCastling;
+    }
+
+    /**
+     * @return the isPromotion
+     */
+    public boolean isPromotion() {
+        return isPromotion;
     }
 }

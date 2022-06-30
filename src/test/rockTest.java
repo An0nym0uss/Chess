@@ -3,11 +3,9 @@ package test;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import chessgame.pieces.*;
 import chessgame.Board;
-import chessgame.Move;
 
 public class rockTest {
 
@@ -23,7 +21,7 @@ public class rockTest {
     public void testInitial_PathClear() {
         Board board = new Board();
         Piece rock = board.getPiece(0, 0);
-        board.removePiece(0, 1);
+        board.removePieceFromBoard(0, 1);
         rock.allLegalMoves(board);
         assertEquals(6, rock.getLegalMoves().size());
         assertEquals(0, rock.getLegalMoves().get(0).getToX());
@@ -39,7 +37,7 @@ public class rockTest {
     public void testInitial_PathClear_White() {
         Board board = new Board();
         Piece rock = board.getPiece(0, 7);
-        board.removePiece(0, 6);
+        board.removePieceFromBoard(0, 6);
         rock.allLegalMoves(board);
         assertEquals(6, rock.getLegalMoves().size());
         assertEquals(0, rock.getLegalMoves().get(0).getToX());
