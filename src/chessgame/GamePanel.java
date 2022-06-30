@@ -137,14 +137,11 @@ public class GamePanel extends JPanel {
         private void checkmateMessage() {
             Boolean isCheckmate = true;
             String message = "";
-            if (game.getCheckmate() == Checkmate.WHITE_WINS) {
-                message = "Checkmate. White has won!";
-            } else if (game.getCheckmate() == Checkmate.BLACK_WINS) {
-                message = "Checkmate. Black has won!";
-            } else if (game.getCheckmate() == Checkmate.STALE_MATE) {
-                message = "Stalemate!";
-            } else {
-                isCheckmate = false;
+            switch (game.getCheckmate()) {
+                case GameState.WHITE_WINS: message = "Checkmate. White has won!"; break;
+                case GameState.BLACK_WINS: message = "Checkmate. Black has won!"; break;
+                case GameState.STALE_MATE: message = "Stalemate!"; break;
+                default: isCheckmate = false;
             }
 
             if (isCheckmate) {

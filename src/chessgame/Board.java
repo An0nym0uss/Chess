@@ -170,7 +170,7 @@ public class Board {
         Piece deadPiece = getDeadPieces().remove(getTurn());
 
         // take back last movement
-        if (prevMove.isPromotion()) {
+        if (prevMove.isPromotion() && !(getPiece(toX, toY) instanceof Pawn)) {
             removePieceFromBoard(toX, toY);
         } else {
             removePiece(toX, toY);
@@ -240,12 +240,8 @@ public class Board {
         }
 
         // draw pieces
-        for (Piece piece : wPieces) {
-            piece.draw(g, panel);
-        }
-        for (Piece piece : bPieces) {
-            piece.draw(g, panel);
-        }
+        wPieces.forEach(p -> p.draw(g, panel));
+        bPieces.forEach(p -> p.draw(g, panel));
 
         if (chosen != null) {
             drawValidMoves(g, panel, chosen);
@@ -326,9 +322,13 @@ public class Board {
     /**
      * Check if kings are being checked.
      */
-    public void setKingChecked() {
-        wKing.setChecked(isChecked(wKing));
-        bKing.setChecked(isChecked(bKing));
+    public void setKingsChecked() {
+        if (wKing != null) {
+            wKing.setChecked(isChecked(wKing));
+        }
+        if (bKing != null) {
+            bKing.setChecked(isChecked(bKing));
+        }
     }
 
     /**
@@ -336,23 +336,13 @@ public class Board {
      * @return {@code} true} if king is being checked
      */
     public boolean isChecked(King king) {
-        List<Piece> oponentPieces;
-        if (king.isWhite()) {
-            oponentPieces = this.getbPieces();
-        } else {
-            oponentPieces = this.getwPieces();
-        }
+        List<Piece> oponentPieces = king.isWhite() ? getbPieces() : getwPieces();
 
-        for (Piece piece : oponentPieces) {
-            piece.allLegalMoves(this);
-            for (Move move : piece.getLegalMoves()) {
-                if (move.getToX() == king.getX() && move.getToY() == king.getY()) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return oponentPieces.stream().anyMatch(p -> {
+            p.allLegalMoves(this);
+            return p.getLegalMoves().stream()
+                .anyMatch(m -> m.getToX() == king.getX() && m.getToY() == king.getY());
+        });
     }
 
     /**
@@ -410,28 +400,28 @@ public class Board {
      * @return white king, or {@code null} if not present
      */
     public King getWKing() {
-        if (wKing == null) {
-            for (Piece piece : wPieces) {
-                if (piece instanceof King) {
-                    return (King) piece;
-                }
-            }
+        if (wKing != null) {
+            return wKing;
         }
-        return this.wKing;
+
+        return (King) wPieces.stream()
+            .filter(p -> p instanceof King)
+            .findFirst()
+            .orElse(null);
     }
 
     /**
      * @return black king, or {@code null} if not present
      */
     public King getBKing() {
-        if (bKing == null) {
-            for (Piece piece : bPieces) {
-                if (piece instanceof King) {
-                    return (King) piece;
-                }
-            }
+        if (bKing != null) {
+            return bKing;
         }
-        return this.bKing;
+
+        return (King) bPieces.stream()
+            .filter(p -> p instanceof King)
+            .findFirst()
+            .orElse(null);
     }
 
     /**

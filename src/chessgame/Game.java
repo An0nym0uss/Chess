@@ -94,34 +94,30 @@ public class Game {
      */
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
-        if (chosen.getValidMoves().contains(move)) {
-            return true;
-        }
-        return false;
+
+        return chosen.getValidMoves().contains(move);
     }
 
     /**
      * Generate legal moves of all white pieces.
      */
     public void generateAllWhiteMoves() {
-        for (Piece piece : board.getwPieces()) {
-            piece.allLegalMoves(board);
-        }
+        board.getwPieces().forEach(p -> p.allLegalMoves(board));
     }
 
     /**
      * Generate legal moves of all black pieces.
      */
     public void generateAllBlackMoves() {
-        for (Piece piece : board.getbPieces()) {
-            piece.allLegalMoves(board);
-        }
+        board.getbPieces().forEach(p -> p.allLegalMoves(board));
     }
 
     /**
      * Check if checkmate and generate available moves of pieces.
      */
     public void changeSide() {
+        board.setKingsChecked();
+
         List<Piece> pieces;
         King king;
         if (isWhiteTurn()) {
@@ -129,17 +125,13 @@ public class Game {
             king = board.getWKing();
 
             generateAllWhiteMoves();
-            for (Piece piece : pieces) {
-                piece.getValidMoves().clear();
-            }
+            pieces.forEach(p -> p.getValidMoves().clear());
         } else {
             pieces = board.getbPieces();
             king = board.getBKing();
 
             generateAllBlackMoves();
-            for (Piece piece : pieces) {
-                piece.getValidMoves().clear();
-            }
+            pieces.forEach(p -> p.getValidMoves().clear());
         }
 
         for (Piece piece : pieces) {
@@ -205,8 +197,18 @@ public class Game {
             // do nothing
             return;
         }
-        board.setKingChecked();
-        checkmate = Checkmate.checkmate(board);
+        
+        List<Piece> pieces = isWhiteTurn() ? board.getwPieces() : board.getbPieces();
+        King king = isWhiteTurn() ? board.getWKing() : board.getBKing();
+        checkmate = isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
+
+        if (pieces.stream().anyMatch(p -> !p.getValidMoves().isEmpty())) {
+            checkmate = GameState.CONTINUE;
+        }
+
+        if (checkmate != GameState.CONTINUE && !king.isChecked()) {
+            checkmate = GameState.STALE_MATE;
+        }
     }
 
     /**
@@ -240,13 +242,6 @@ public class Game {
     }
 
     // getters and setters
-
-    /**
-     * @param checkmate the checkmate to set
-     */
-    public void setCheckmate(int checkmate) {
-        this.checkmate = checkmate;
-    }
 
     /**
      * @return the checkmate

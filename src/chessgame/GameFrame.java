@@ -24,6 +24,9 @@ public class GameFrame extends JFrame implements Runnable {
         chooseResolution();
     }
 
+    /**
+     * Allows to choose resolution of Chess game and then starts the game. 
+     */
     private void chooseResolution() {
         JFrame resolution = new JFrame();
         JPanel title = new JPanel();
@@ -82,6 +85,9 @@ public class GameFrame extends JFrame implements Runnable {
         resolution.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    /**
+     * The game starts with a board panel and buttons at the bottom. 
+     */
     private void startGame() {
         game = new Game();
         panel = new GamePanel(width, game);
@@ -98,6 +104,10 @@ public class GameFrame extends JFrame implements Runnable {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    /**
+     * Construct panel of two buttons: new game, take back move.
+     * @return button panel
+     */
     private JPanel buttons() {
         JPanel buttons = new JPanel();
         buttons.setLayout(new GridLayout(1, 2, width / 10, 0));

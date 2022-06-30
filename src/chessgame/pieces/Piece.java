@@ -59,21 +59,15 @@ public abstract class Piece {
         this.x = toX;
         this.y = toY;
 
-        // move to empty tile
         if (board.getPiece(toX, toY) == null) {
-            // pawn en passant move
+            // move to empty tile
             if (this instanceof Pawn) {
                 enPassant(fromX, fromY, toX, toY, board);
-            }
-
-            // king castling
-            if (this instanceof King) {
+            } else if (this instanceof King) {
                 isCastling = castling(fromX, fromY, toX, toY, board);
             }
         } else if (board.getPiece(toX, toY).isWhite != this.isWhite) {
-            // capture enemy piece
-            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, toY));
-            board.removePieceFromBoard(toX, toY);
+            capturePiece(board, toX, toY);
         }
 
         if (this instanceof Pawn && ((Pawn) this).isPromotable()) {
@@ -87,6 +81,18 @@ public abstract class Piece {
         // store the movement
         Move move = new Move(fromX, fromY, toX, toY, this, isCastling, isPromotion);
         board.getMoves().push(move);
+    }
+
+    /**
+     * Piece in given tile is captured. Place it in {@code deadPieces} and 
+     * remove from pieces list. 
+     * @param board
+     * @param x
+     * @param y
+     */
+    private void capturePiece(Board board, int x, int y) {
+        board.getDeadPieces().put(board.getTurn(), board.getPiece(x, y));
+            board.removePieceFromBoard(x, y);
     }
 
     /**
@@ -113,19 +119,11 @@ public abstract class Piece {
      * @param board
      */
     private void enPassant(int fromX, int fromY, int toX, int toY, Board board) {
-        // check if target tile is empty
-        if (board.getPiece(toX, toY) != null) {
-            // target tile not empty, do nothing
-            return;
-        }
-
         // capture enemy pawn if is diagnally forward
         if (isWhite && toY == fromY - 1 && (toX - fromX == 1 || fromX - toX == 1)) {
-            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
-            board.removePieceFromBoard(toX, fromY);
+            capturePiece(board, toX, fromY);
         } else if (!isWhite && toY == fromY + 1 && (toX - fromX == 1 || fromX - toX == 1)) {
-            board.getDeadPieces().put(board.getTurn(), board.getPiece(toX, fromY));
-            board.removePieceFromBoard(toX, fromY);
+            capturePiece(board, toX, fromY);
         }
     }
 
