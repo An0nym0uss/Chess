@@ -9,7 +9,7 @@ import chessgame.pieces.Pawn;
 import chessgame.pieces.Piece;
 
 
-public class takeBackTest {
+public class TakeBackTest {
     @Test
     public void pawnTest() {
         Game game = new Game(true);

@@ -1,12 +1,13 @@
 package test;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import chessgame.pieces.*;
 import chessgame.Board;
 
-public class bishopTest {
+public class BishopTest {
+    
     @Test
     public void testInitial_PathClear() {
         Board board = new Board();

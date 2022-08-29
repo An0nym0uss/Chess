@@ -36,19 +36,121 @@ public abstract class Piece {
     }
 
     /**
-     * Check if this piece can move to the tile. 
-     * @param toX target column
-     * @param toY target row
+     * Check if this piece can move to the tile.
+     * 
+     * @param toX   target column
+     * @param toY   target row
      * @param board chess board
-     * @return {@code true} if given tile is an available move for this piece.
+     * @return {@code true} if given tile is an available move for this piece,
+     *         {@code false} otherwise
      */
     public abstract boolean canMove(int toX, int toY, Board board);
 
     /**
+     * Check if path from current tile to target tile is obstructed horizontally or
+     * vertcally.
+     * Target tile is either empty or occupied by an enemy piece.
+     * 
+     * @param toX
+     * @param toY
+     * @param board
+     * @return {@code true} if obstructed, {@code false} otherwise
+     */
+    protected boolean isObstructedOrthognally(int toX, int toY, Board board) {
+        if (board.getPiece(toX, toY) != null && this.isWhite == board.getPiece(toX, toY).isWhite) {
+            return true;
+        }
+
+        if (toY > this.y) {
+            for (int i = this.y + 1; i < toY; i++) {
+                if (board.getPiece(this.x, i) != null) {
+                    return true;
+                }
+            }
+        } else if (toY < this.y) {
+            for (int i = this.y - 1; i > toY; i--) {
+                if (board.getPiece(this.x, i) != null) {
+                    return true;
+                }
+            }
+        } else if (toX > this.x) {
+            for (int i = this.x + 1; i < toX; i++) {
+                if (board.getPiece(i, this.y) != null) {
+                    return true;
+                }
+            }
+        } else if (toX < this.x) {
+            for (int i = this.x - 1; i > toX; i--) {
+                if (board.getPiece(i, this.y) != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if path from current tile to target tile is obstructed diagnally.
+     * Target tile is either empty or occupied by an enemy piece.
+     * 
+     * @param toX
+     * @param toY
+     * @param board
+     * @return {@code true} if obstructed, {@code false} otherwise
+     */
+    protected boolean isObstructedDiagonally(int toX, int toY, Board board) {
+        if (board.getPiece(toX, toY) != null && this.isWhite == board.getPiece(toX, toY).isWhite) {
+            return true;
+        }
+
+        if (toY > this.y && toX > this.x) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY - i == this.y) {
+                    return false;
+                }
+                if (board.getPiece(toX - i, toY - i) != null) {
+                    return true;
+                }
+            }
+        } else if (toY > this.y && toX < this.x) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY - i == this.y) {
+                    return false;
+                }
+                if (board.getPiece(toX + i, toY - i) != null) {
+                    return true;
+                }
+            }
+        } else if (toY < this.y && toX < this.x) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY + i == this.y) {
+                    return false;
+                }
+                if (board.getPiece(toX + i, toY + i) != null) {
+                    return true;
+                }
+            }
+        } else if (toY < this.y && toX > this.x) {
+            for (int i = 1; i < Board.COLUMNS; i++) {
+                if (toY + i == this.y) {
+                    return false;
+                }
+                if (board.getPiece(toX - i, toY + i) != null) {
+                    return true;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Move the piece to the tile.
      * Assume that the position given is valid.
-     * @param toX column
-     * @param toY row
+     * 
+     * @param toX   column
+     * @param toY   row
      * @param board chess board
      */
     public void move(int toX, int toY, Board board) {
@@ -84,19 +186,21 @@ public abstract class Piece {
     }
 
     /**
-     * Piece in given tile is captured. Place it in {@code deadPieces} and 
-     * remove from pieces list. 
+     * Piece in given tile is captured. Place it in {@code deadPieces} and
+     * remove from pieces list.
+     * 
      * @param board
      * @param x
      * @param y
      */
     private void capturePiece(Board board, int x, int y) {
         board.getDeadPieces().put(board.getTurn(), board.getPiece(x, y));
-            board.removePieceFromBoard(x, y);
+        board.removePieceFromBoard(x, y);
     }
 
     /**
      * Store all possible moves can be made by this piece.
+     * 
      * @param board
      */
     public void allLegalMoves(Board board) {
@@ -112,6 +216,7 @@ public abstract class Piece {
 
     /**
      * Pawn performs En Passant move if valid.
+     * 
      * @param fromX
      * @param fromY
      * @param toX
@@ -130,12 +235,14 @@ public abstract class Piece {
     /**
      * Castling consists of moving the king two squares towards a rook,
      * then placing the rook on the other side of the king, adjacent to it.
-     * This method places the rook next to king. 
+     * This method places the rook next to king.
+     * 
      * @param fromX
      * @param fromY
      * @param toX
      * @param toY
      * @param board
+     * @return {@code true} if current move is castling, {@code false} otherwise
      */
     private boolean castling(int fromX, int fromY, int toX, int toY, Board board) {
         if (toX == fromX + 2) {
@@ -161,18 +268,20 @@ public abstract class Piece {
 
             return true;
         }
+
         return false;
     }
 
     /**
-     * Draw image of the piece to panel. 
+     * Draw image of the piece to panel.
+     * 
      * @param g
      * @param frame
      */
     public void draw(Graphics g, JPanel panel) {
         GamePanel gamePanel = (GamePanel) panel;
-        g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(), 
-            gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
+        g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(),
+                gamePanel.getTileWidth(), gamePanel.getTileWidth(), panel);
     }
 
     @Override
@@ -185,11 +294,9 @@ public abstract class Piece {
         }
 
         Piece other = (Piece) obj;
-        if (this.startX == other.startX && this.startY == other.startY) {
-            return true;
-        }
-
-        return false;
+        return this.startX == other.startX
+                && this.startY == other.startY
+                && this.isWhite == other.isWhite;
     }
 
     // getters and setters
@@ -255,14 +362,6 @@ public abstract class Piece {
      */
     public List<Move> getValidMoves() {
         return validMoves;
-    }
-
-    public int getStartX() {
-        return this.startX;
-    }
-
-    public int getStartY() {
-        return this.startY;
     }
 
     /**
