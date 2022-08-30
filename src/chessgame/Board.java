@@ -20,13 +20,14 @@ import chessgame.pieces.*;
 public class Board {
     public static int ROWS = 8;
     public static int COLUMNS = 8;
-    private Piece[][] tiles;
+
+    private Piece[][] tiles = new Piece[ROWS][COLUMNS];
     private King wKing;
     private King bKing;
     private List<Piece> wPieces = new ArrayList<>();
     private List<Piece> bPieces = new ArrayList<>();
     private Stack<Move> moves = new Stack<>();
-    private Integer turn;
+    private Integer turn = 0;
     private Map<Integer, Piece> deadPieces = new HashMap<>();
 
     // define colors
@@ -38,15 +39,11 @@ public class Board {
     private static Color CHECKED = new Color(235, 20, 20, 100);
 
     public Board() {
-        this(false);
+        this("basic.txt");
     }
 
-    public Board(boolean empty) {
-        tiles = new Piece[ROWS][COLUMNS];
-        turn = 0;
-        if (!empty) {
-            setup();
-        }
+    public Board(String fileName) {
+        setup(fileName);
     }
 
     /**
@@ -54,41 +51,65 @@ public class Board {
      * Black pieces on the top (x = 0 || 1)
      * White pieces at the bottom (x = 6 || 7)
      */
-    public void setup() {
-        // setup pawns
-        for (int col = 0; col < COLUMNS; col++) {
-            setTile(col, 6, new Pawn(col, 6, true));
-            setTile(col, 1, new Pawn(col, 1, false));
+    private void setup(String fileName) {
+        String boardStr = BoardReader.readBoard(fileName);
+        int index = 0;
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLUMNS; x++) {
+                while (index < boardStr.length() && Character.isWhitespace(boardStr.charAt(index))) {
+                    ++index;
+                }
+
+                if (index >= boardStr.length()) {
+                    System.out.println("WARNING: Board text file is not complete\n");
+                    break;
+                }
+
+                Character ch = boardStr.charAt(index);
+                switch (Character.toLowerCase(ch)) {
+                    case 'b':
+                        Bishop bishop = ch.equals('b') ? new Bishop(x, y, true)
+                                : new Bishop(x, y, false);
+                        setTile(x, y, bishop);
+                        break;
+                    case 'k':
+                        King king = ch.equals('k') ? new King(x, y, true)
+                                : new King(x, y, false);
+                        setTile(x, y, king);
+                        break;
+                    case 'n':
+                        Knight knight = ch.equals('n') ? new Knight(x, y, true)
+                                : new Knight(x, y, false);
+                        setTile(x, y, knight);
+                        break;
+                    case 'p':
+                        Pawn pawn = ch.equals('p') ? new Pawn(x, y, true)
+                                : new Pawn(x, y, false);
+                        setTile(x, y, pawn);
+                        break;
+                    case 'q':
+                        Queen queen = ch.equals('q') ? new Queen(x, y, true)
+                                : new Queen(x, y, false);
+                        setTile(x, y, queen);
+                        break;
+                    case 'r':
+                        Rook rook = ch.equals('r') ? new Rook(x, y, true)
+                                : new Rook(x, y, false);
+                        setTile(x, y, rook);
+                        break;
+                    case '*':
+                        // do nothing
+                        break;
+                    default:
+                        System.out.println("WARNING: Unexpected charater " + ch + " of index " + index + "\n");
+                }
+
+                ++index;
+            }
         }
 
-        // setup kings
-        wKing = new King(4, 7, true);
-        setTile(4, 7, wKing);
-
-        bKing = new King(4, 0, false);
-        setTile(4, 0, bKing);
-
-        // setup queens
-        setTile(3, 7, new Queen(3, 7, true));
-        setTile(3, 0, new Queen(3, 0, false));
-
-        // setup rooks
-        setTile(0, 7, new Rook(0, 7, true));
-        setTile(7, 7, new Rook(7, 7, true));
-        setTile(0, 0, new Rook(0, 0, false));
-        setTile(7, 0, new Rook(7, 0, false));
-
-        // setup knights
-        setTile(1, 7, new Knight(1, 7, true));
-        setTile(6, 7, new Knight(6, 7, true));
-        setTile(1, 0, new Knight(1, 0, false));
-        setTile(6, 0, new Knight(6, 0, false));
-
-        // setup bishops
-        setTile(2, 7, new Bishop(2, 7, true));
-        setTile(5, 7, new Bishop(5, 7, true));
-        setTile(2, 0, new Bishop(2, 0, false));
-        setTile(5, 0, new Bishop(5, 0, false));
+        wKing = getWKing();
+        bKing = getBKing();
     }
 
     /**
@@ -336,7 +357,7 @@ public class Board {
 
     /**
      * @param king
-     * @return {@code} true} if king is being checked
+     * @return {@code} true} if king is being checked, {@code false} otherwise
      */
     public boolean isChecked(King king) {
         List<Piece> oponentPieces = king.isWhite() ? getbPieces() : getwPieces();
@@ -400,31 +421,25 @@ public class Board {
     }
 
     /**
-     * @return white king, or {@code null} if not present
+     * @return white king, or {@code null} if not exist
      */
     public King getWKing() {
-        if (wKing != null) {
-            return wKing;
-        }
-
-        return (King) wPieces.stream()
-                .filter(p -> p instanceof King)
-                .findFirst()
-                .orElse(null);
+        return wKing != null ? wKing
+                : (King) wPieces.stream()
+                        .filter(p -> p instanceof King)
+                        .findFirst()
+                        .orElse(null);
     }
 
     /**
-     * @return black king, or {@code null} if not present
+     * @return black king, or {@code null} if not exist
      */
     public King getBKing() {
-        if (bKing != null) {
-            return bKing;
-        }
-
-        return (King) bPieces.stream()
-                .filter(p -> p instanceof King)
-                .findFirst()
-                .orElse(null);
+        return bKing != null ? bKing
+                : (King) bPieces.stream()
+                        .filter(p -> p instanceof King)
+                        .findFirst()
+                        .orElse(null);
     }
 
     /**

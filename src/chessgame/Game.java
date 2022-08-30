@@ -25,7 +25,7 @@ public class Game {
     public static int MOVE = 1;
 
     /**
-     * Construct a Chess board.
+     * Construct a game with default Chess board.
      */
     public Game() {
         this.board = new Board();
@@ -33,12 +33,13 @@ public class Game {
     }
 
     /**
-     * Construct a game with a board.
+     * Construct a game with a board of given file.
      * 
      * @param empty {@code true} creates an empty board
      */
-    public Game(boolean empty) {
-        this.board = new Board(true);
+    public Game(String fileName) {
+        this.board = new Board(fileName);
+        changeSide();
     }
 
     /**
@@ -199,7 +200,7 @@ public class Game {
     public void checkmate() {
         if ((isWhiteTurn() && board.getWKing() == null) ||
                 (!isWhiteTurn() && board.getBKing() == null)) {
-            // do nothing
+            // king not found, do nothing
             return;
         }
 

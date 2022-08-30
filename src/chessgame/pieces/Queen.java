@@ -12,7 +12,10 @@ public class Queen extends Piece {
             this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.QUEEN_W))
                     : ImageIO.read(getClass().getResource(PieceImages.QUEEN_B));
         } catch (IOException e) {
-            System.out.println("Image file not found: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            System.out.println(this.getClass().getName() + " image file not found.\n");
         }
     }
 

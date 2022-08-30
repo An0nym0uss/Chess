@@ -34,7 +34,7 @@ public class PawnTest {
 
     @Test
     public void testEnPassant() {
-        Game game = new Game(true);
+        Game game = new Game("empty.txt");
         Board board = game.getBoard();
 
         Piece wPawn = new Pawn(1, 6, true);

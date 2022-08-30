@@ -14,7 +14,10 @@ public class Pawn extends Piece {
             this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.PAWN_W))
                     : ImageIO.read(getClass().getResource(PieceImages.PAWN_B));
         } catch (IOException e) {
-            System.out.println("Image file not found: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            System.out.println(this.getClass().getName() + " image file not found.\n");
         }
     }
 

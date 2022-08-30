@@ -12,7 +12,7 @@ import chessgame.pieces.Piece;
 public class TakeBackTest {
     @Test
     public void pawnTest() {
-        Game game = new Game(true);
+        Game game = new Game("empty.txt");
         Board board = game.getBoard();
         Piece pawn = new Pawn(1, 6, true);
         board.setTile(1, 6, pawn);
