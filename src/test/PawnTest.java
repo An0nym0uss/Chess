@@ -1,6 +1,6 @@
 package test;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import chessgame.pieces.*;
@@ -8,7 +8,7 @@ import chessgame.Board;
 import chessgame.Game;
 import chessgame.Move;
 
-public class pawnTest {
+public class PawnTest {
 
     @Test
     public void testInitial() {
@@ -34,7 +34,7 @@ public class pawnTest {
 
     @Test
     public void testEnPassant() {
-        Game game = new Game(true);
+        Game game = new Game("empty.txt");
         Board board = game.getBoard();
 
         Piece wPawn = new Pawn(1, 6, true);

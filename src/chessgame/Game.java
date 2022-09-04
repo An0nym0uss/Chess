@@ -12,9 +12,9 @@ import chessgame.pieces.Queen;
 import chessgame.pieces.Rook;
 
 /**
- * Class {@code Game} contains a chess board and a chosen piece. 
- * It provides methods that manipulates the chosen piece and 
- * allows Chess game to run. 
+ * Class {@code Game} contains a chess board and a chosen piece.
+ * It provides methods that manipulates the chosen piece and
+ * allows Chess game to run.
  */
 public class Game {
     private Board board;
@@ -25,7 +25,7 @@ public class Game {
     public static int MOVE = 1;
 
     /**
-     * Construct a Chess board.
+     * Construct a game with default Chess board.
      */
     public Game() {
         this.board = new Board();
@@ -33,24 +33,26 @@ public class Game {
     }
 
     /**
-     * Construct a game with a board. 
+     * Construct a game with a board of given file.
+     * 
      * @param empty {@code true} creates an empty board
      */
-    public Game(boolean empty) {
-        this.board = new Board(true);
+    public Game(String fileName) {
+        this.board = new Board(fileName);
+        changeSide();
     }
 
     /**
-     * Select the piece on tile or 
+     * Select the piece on tile or
      * move chosen piece to the tile.
+     * 
      * @param x column
      * @param y row
      * @return {@code SELECT} if select, or {@code MOVE} if move.
      */
     public int selectOrMove(int x, int y) {
         Piece target = board.getPiece(x, y);
-        if (target != null && target.isWhite() == isWhiteTurn()
-        ) {
+        if (target != null && target.isWhite() == isWhiteTurn()) {
             selectPiece(x, y);
             return SELECT;
         } else {
@@ -62,15 +64,17 @@ public class Game {
     /**
      * Choose the piece on the board with given x and y coordinates.
      * Assuming that given tile has piece of correct color.
+     * 
      * @param x column
      * @param y row
-     */ 
+     */
     public void selectPiece(int x, int y) {
         chosen = board.getPiece(x, y);
     }
 
     /**
      * Move the chosen piece to the tile of given coordinates if is valid.
+     * 
      * @param x column
      * @param y row
      */
@@ -90,7 +94,8 @@ public class Game {
     /**
      * @param toX column
      * @param toY row
-     * @return {@code true} if the chosen piece can move to the tile
+     * @return {@code true} if the chosen piece can move to the tile, {@code false}
+     *         otherwise
      */
     private boolean isValidMove(int toX, int toY) {
         Move move = new Move(chosen.getX(), chosen.getY(), toX, toY, chosen);
@@ -153,8 +158,10 @@ public class Game {
     }
 
     /**
-     * Promote pawn to given target, where 
-     * {@code 0} is Queen, {@code 1} is Rook, {@code 2} is Knight and {@code 3} is Bishop.
+     * Promote pawn to given target, where
+     * {@code 0} is Queen, {@code 1} is Rook, {@code 2} is Knight and {@code 3} is
+     * Bishop.
+     * 
      * @param target piece that the pawn promotes to
      */
     public void promotion(int target) {
@@ -184,20 +191,19 @@ public class Game {
     }
 
     /**
-     * Set current state of the game to 
-     * {@code Checkmate.CONTINUE}, 
-     * {@code Checkmate.WHITE_WINS}, 
-     * {@code Checkmate.BLACK_WINS}, or 
+     * Set current state of the game to
+     * {@code Checkmate.CONTINUE},
+     * {@code Checkmate.WHITE_WINS},
+     * {@code Checkmate.BLACK_WINS}, or
      * {@code Checkmate.STALE_MATE}.
      */
     public void checkmate() {
         if ((isWhiteTurn() && board.getWKing() == null) ||
-            (!isWhiteTurn() && board.getBKing() == null)
-        ) {
-            // do nothing
+                (!isWhiteTurn() && board.getBKing() == null)) {
+            // king not found, do nothing
             return;
         }
-        
+
         List<Piece> pieces = isWhiteTurn() ? board.getwPieces() : board.getbPieces();
         King king = isWhiteTurn() ? board.getWKing() : board.getBKing();
         checkmate = isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
@@ -220,6 +226,7 @@ public class Game {
 
     /**
      * Draw the game board.
+     * 
      * @param g
      * @param panel
      */

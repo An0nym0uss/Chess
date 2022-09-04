@@ -1,16 +1,19 @@
 package chessgame.pieces;
 
+/**
+ * Class {@code PieceImages} defines paths of images of chess pieces.
+ */
 public class PieceImages {
-    public static String BISHOP_B = "/resources/bishop_b.png";
-    public static String BISHOP_W = "/resources/bishop_w.png";
-    public static String KING_B = "/resources/king_b.png";
-    public static String KING_W = "/resources/king_w.png";
-    public static String KNIGHT_B = "/resources/knight_b.png";
-    public static String KNIGHT_W = "/resources/knight_w.png";
-    public static String PAWN_B = "/resources/pawn_b.png";
-    public static String PAWN_W = "/resources/pawn_w.png";
-    public static String QUEEN_B = "/resources/queen_b.png";
-    public static String QUEEN_W = "/resources/queen_w.png";
-    public static String ROOK_B = "/resources/rook_b.png";
-    public static String ROOK_W = "/resources/rook_w.png";
+    public static String BISHOP_B = "/resources/pieceImages/bishop_b.png";
+    public static String BISHOP_W = "/resources/pieceImages/bishop_w.png";
+    public static String KING_B = "/resources/pieceImages/king_b.png";
+    public static String KING_W = "/resources/pieceImages/king_w.png";
+    public static String KNIGHT_B = "/resources/pieceImages/knight_b.png";
+    public static String KNIGHT_W = "/resources/pieceImages/knight_w.png";
+    public static String PAWN_B = "/resources/pieceImages/pawn_b.png";
+    public static String PAWN_W = "/resources/pieceImages/pawn_w.png";
+    public static String QUEEN_B = "/resources/pieceImages/queen_b.png";
+    public static String QUEEN_W = "/resources/pieceImages/queen_w.png";
+    public static String ROOK_B = "/resources/pieceImages/rook_b.png";
+    public static String ROOK_W = "/resources/pieceImages/rook_w.png";
 }

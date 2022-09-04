@@ -11,14 +11,22 @@ public class Pawn extends Piece {
     public Pawn(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         try {
-            if (isWhite) {
-                this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_W));
-            } else {
-                this.image = ImageIO.read(getClass().getResource(PieceImages.PAWN_B));
-            }
+            this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.PAWN_W))
+                    : ImageIO.read(getClass().getResource(PieceImages.PAWN_B));
         } catch (IOException e) {
-            System.out.println("Image file not found: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            System.out.println(this.getClass().getName() + " image file not found.\n");
         }
+    }
+
+    /**
+     * 
+     * @return {@code true} if this pawn is promotable, {@code false} otherwise
+     */
+    public boolean isPromotable() {
+        return this.getY() == Board.ROWS - 1 || this.getY() == 0;
     }
 
     @Override
@@ -34,12 +42,17 @@ public class Pawn extends Piece {
             } else if (!isWhite && toY != this.y + 1) {
                 return false;
             }
-            // target tile is not occupied by enemy piece
-            if (board.getPiece(toX, toY) == null || board.getPiece(toX, toY).isWhite == isWhite) {
-                return false;
-            }
+            // if target tile is occupied by enemy piece, return true
+            return board.getPiece(toX, toY) != null && board.getPiece(toX, toY).isWhite != isWhite;
         } else if ((isWhite && toY == this.y - 1) || (!isWhite && toY == this.y + 1)) {
             // moving one tile forward
+            if (toX != this.x) {
+                return false;
+            }
+            // if target tile is empty, return true
+            return board.getPiece(toX, toY) == null;
+        } else if ((isWhite && toY == this.y - 2) || (!isWhite && toY == this.y + 2)) {
+            // moving two tiles forward
             if (toX != this.x) {
                 return false;
             }
@@ -47,40 +60,15 @@ public class Pawn extends Piece {
             if (board.getPiece(toX, toY) != null) {
                 return false;
             }
-        } else if ((isWhite && toY == this.y - 2) || (!isWhite && toY == this.y + 2)) {
-            // moving two tiles forward
-            if (toX != this.x) {
-                return false;
-            }
             // pawn has moved
             if (isMoved) {
                 return false;
             }
-            // pawn is obsetructed by other pieces
-            if (isWhite) {
-                if (board.getPiece(toX, toY) != null || 
-                    board.getPiece(this.x, this.y - 1) != null
-                ) {
-                    return false;
-                }
-            } else {
-                if (board.getPiece(toX, toY) != null || 
-                    board.getPiece(this.x, this.y + 1) != null
-                ) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
+            // if pawn is not obsetructed by other pieces, return true
+            return isWhite ? board.getPiece(this.x, this.y - 1) == null
+                    : board.getPiece(this.x, this.y + 1) == null;
         }
 
-        return true;
-    }
-
-    public boolean isPromotable() {
-        if (this.getY() == Board.ROWS - 1 || this.getY() == 0) {
-            return true;
-        }
         return false;
     }
 
@@ -89,7 +77,10 @@ public class Pawn extends Piece {
      * En Passant allows an enemy pawn that has just advanced two squares
      * to be captured by a horizontally adjacent pawn.
      * 
+     * @param toX
+     * @param toY
      * @param board
+     * @return {@code true} if move is En Passant, {@code flase} otherwise
      */
     private boolean isEnPassant(int toX, int toY, Board board) {
         // target tile is not empty

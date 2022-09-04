@@ -14,13 +14,13 @@ public class King extends Piece {
         super(x, y, isWhite);
         this.isChecked = false;
         try {
-            if (isWhite) {
-                this.image = ImageIO.read(getClass().getResource(PieceImages.KING_W));
-            } else {
-                this.image = ImageIO.read(getClass().getResource(PieceImages.KING_B));
-            }
+            this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.KING_W))
+                    : ImageIO.read(getClass().getResource(PieceImages.KING_B));
         } catch (IOException e) {
-            System.out.println("Image file not found: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            System.out.println(this.getClass().getName() + " image file not found.\n");
         }
     }
 
@@ -34,14 +34,21 @@ public class King extends Piece {
             return true;
         }
 
-        if ((Math.abs(toX - getX()) == 1 && toY == getY())
-        || (Math.abs(toY - getY()) == 1 && toX == getX()) 
-        || (Math.abs(toX - getX()) == 1 && Math.abs(toY - getY()) == 1)) {
-            return true;
-        }
-        return false;
+        return (Math.abs(toX - getX()) == 1 && toY == getY())
+                || (Math.abs(toY - getY()) == 1 && toX == getX())
+                || (Math.abs(toX - getX()) == 1 && Math.abs(toY - getY()) == 1);
     }
-    
+
+    /**
+     * Castling consists of moving the king two squares towards a rook,
+     * then placing the rook on the other side of the king, adjacent to it.
+     * This method places the rook next to king.
+     * 
+     * @param toX
+     * @param toY
+     * @param board
+     * @return {@code true} if current move is castling, {@code false} otherwise
+     */
     private boolean isCastling(int toX, int toY, Board board) {
         if (isMoved || isChecked || toY != y) {
             return false;
@@ -55,12 +62,9 @@ public class King extends Piece {
                 return false;
             }
 
-            // check if tiles between king and rook are empty
-            if (board.getPiece(x + 1, y) != null ||
-                board.getPiece(x + 2, y) != null
-            ) {
-                return false;
-            }
+            // if tiles between king and rook are empty, return true
+            return board.getPiece(x + 1, y) == null
+                    && board.getPiece(x + 2, y) == null;
         } else if (toX == x - 2) {
             // castle queenside
             // check if rook has not moved
@@ -69,25 +73,25 @@ public class King extends Piece {
                 return false;
             }
 
-            // check if tiles between king and rook are empty
-            if (board.getPiece(x - 1, y) != null ||
-                board.getPiece(x - 2, y) != null ||
-                board.getPiece(x - 3, y) != null
-            ) {
-                return false;
-            }
-        } else {
-            return false;
+            // if tiles between king and rook are empty, return true
+            return board.getPiece(x - 1, y) == null
+                    && board.getPiece(x - 2, y) == null
+                    && board.getPiece(x - 3, y) == null;
         }
 
-        return true;
+        return false;
     }
 
-
+    /**
+     * @return the isChecked
+     */
     public boolean isChecked() {
-        return this.isChecked;
+        return isChecked;
     }
 
+    /**
+     * @param isChecked the isChecked to set
+     */
     public void setChecked(boolean isChecked) {
         this.isChecked = isChecked;
     }
