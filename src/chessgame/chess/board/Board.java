@@ -1,4 +1,4 @@
-package chessgame;
+package chessgame.chess.board;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,17 +7,25 @@ import java.util.Map;
 import java.util.Stack;
 import javax.swing.JPanel;
 import java.awt.Graphics;
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.Serial;
+import java.io.Serializable;
 import java.awt.BasicStroke;
 
-import chessgame.pieces.*;
+import chessgame.chess.Drawable;
+import chessgame.chess.GamePanel;
+import chessgame.chess.TileColor;
+import chessgame.chess.pieces.*;
+import chessgame.chess.util.Move;
 
 /**
  * Class {@code Board} contains a 8 * 8 board and information of Pieces.
  * It also stores previous moves which allows us to trace back steps.
  */
-public class Board {
+public class Board implements Drawable, Serializable {
+    @Serial
+    private static final long serialVersionUID = 0x010001;
+
     public static int ROWS = 8;
     public static int COLUMNS = 8;
 
@@ -30,18 +38,18 @@ public class Board {
     private Integer turn = 0;
     private Map<Integer, Piece> deadPieces = new HashMap<>();
 
-    // define colors
-    private static Color WHITE_TILE = new Color(235, 235, 211);
-    private static Color BLACK_TILE = new Color(125, 147, 93);
-    private static Color HIGHLIGHT_TILE = new Color(245, 245, 50, 100);
-    private static Color MOVE = new Color(90, 90, 90, 200);
-    private static Color CAPTURE = new Color(220, 30, 140, 200);
-    private static Color CHECKED = new Color(235, 20, 20, 100);
-
+    /**
+     * Construct a board with default setup
+     */
     public Board() {
         this("basic.txt");
     }
 
+    /**
+     * Construct a board with setup of given file.
+     * 
+     * @param fileName the file of board setup
+     */
     public Board(String fileName) {
         setup(fileName);
     }
@@ -50,6 +58,8 @@ public class Board {
      * Initialise the board to put pieces on tiles.
      * Black pieces on the top (x = 0 || 1)
      * White pieces at the bottom (x = 6 || 7)
+     * 
+     * @param fileName the file of board setup.
      */
     private void setup(String fileName) {
         String boardStr = BoardReader.readBoard(fileName);
@@ -108,8 +118,14 @@ public class Board {
             }
         }
 
-        wKing = getWKing();
-        bKing = getBKing();
+        wKing = (King) wPieces.stream()
+                .filter(p -> p instanceof King)
+                .findFirst()
+                .orElse(null);
+        bKing = (King) bPieces.stream()
+                .filter(p -> p instanceof King)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -126,7 +142,7 @@ public class Board {
      * 
      * @param x     column
      * @param y     row
-     * @param piece
+     * @param piece the piece
      */
     public void setTile(int x, int y, Piece piece) {
         tiles[x][y] = piece;
@@ -232,21 +248,16 @@ public class Board {
         }
     }
 
-    /**
-     * Draw tiles and pieces on the board.
-     * 
-     * @param g
-     * @param frame
-     */
-    public void draw(Graphics g, JPanel panel, Piece chosen) {
+    @Override
+    public void draw(Graphics g, JPanel panel) {
         // draw tiles
         GamePanel gamePanel = (GamePanel) panel;
         for (int x = 0; x < COLUMNS; x++) {
             for (int y = 0; y < ROWS; y++) {
                 if ((x + y) % 2 == 1) {
-                    g.setColor(BLACK_TILE);
+                    g.setColor(TileColor.BLACK_TILE);
                 } else {
-                    g.setColor(WHITE_TILE);
+                    g.setColor(TileColor.WHITE_TILE);
                 }
                 g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(),
                         gamePanel.getTileWidth(), gamePanel.getTileWidth());
@@ -255,68 +266,17 @@ public class Board {
 
         drawCheckedKing(g, panel);
 
-        if (chosen != null) {
-            highlightTile(g, panel, chosen);
-        }
-
         // draw pieces
         wPieces.forEach(p -> p.draw(g, panel));
         bPieces.forEach(p -> p.draw(g, panel));
 
-        if (chosen != null) {
-            drawValidMoves(g, panel, chosen);
-        }
-    }
-
-    /**
-     * Highlight the tile occupied by given piece.
-     * 
-     * @param g
-     * @param panel
-     * @param chosen given chess piece
-     */
-    private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
-        GamePanel gamePanel = (GamePanel) panel;
-        int x = chosen.getX();
-        int y = chosen.getY();
-        // yellow with 40% transparency
-        g.setColor(HIGHLIGHT_TILE);
-        g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(),
-                gamePanel.getTileWidth(), gamePanel.getTileWidth());
-    }
-
-    /**
-     * Draw valid moves of chosen piece.
-     * 
-     * @param g
-     * @param panel
-     * @param chosen given chess piece
-     */
-    private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
-        GamePanel gamePanel = (GamePanel) panel;
-
-        for (Move move : chosen.getValidMoves()) {
-            int x = move.getToX();
-            int y = move.getToY();
-            if (getPiece(x, y) == null) {
-                g.setColor(MOVE);
-            } else {
-                g.setColor(CAPTURE);
-            }
-
-            int size = gamePanel.getTileWidth();
-            int diameter = gamePanel.getTileWidth() / 2;
-            int offset_2 = (int) (2 * diameter * 0.41421);
-            int offset = (int) ((size * 1.41421 - diameter - offset_2) / 2);
-            g.fillOval(x * size + offset, y * size + offset, diameter, diameter);
-        }
     }
 
     /**
      * Mark the king tile red if it's checked.
      * 
-     * @param g
-     * @param panel
+     * @param g     the Graphics
+     * @param panel the panel
      */
     private void drawCheckedKing(Graphics g, JPanel panel) {
         GamePanel gamePanel = (GamePanel) panel;
@@ -324,7 +284,7 @@ public class Board {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(width / 15));
-        g2.setColor(CHECKED);
+        g2.setColor(TileColor.CHECKED);
 
         if (wKing != null && wKing.isChecked()) {
             g2.drawRect(wKing.getX() * width, wKing.getY() * width, width, width);
@@ -336,36 +296,44 @@ public class Board {
     }
 
     /**
-     * @return {@code true} if is white's turn ({@code turn} is even), {@code false}
-     *         otherwise
+     * @return {@code true} if is white's turn ({@code turn} is even),
+     *         {@code false} otherwise
      */
     public boolean isWhiteTurn() {
         return (turn & 1) == 0 ? true : false;
     }
 
     /**
-     * Check if kings are being checked, and set {@code isChecked}.
+     * @return {@code} true} if white king is being checked, {@code false} otherwise
      */
-    public void setKingsChecked() {
-        if (wKing != null) {
-            wKing.setChecked(isChecked(wKing));
+    public boolean isWKingChecked() {
+        if (wKing == null) {
+            return false;
         }
-        if (bKing != null) {
-            bKing.setChecked(isChecked(bKing));
-        }
-    }
 
-    /**
-     * @param king
-     * @return {@code} true} if king is being checked, {@code false} otherwise
-     */
-    public boolean isChecked(King king) {
-        List<Piece> oponentPieces = king.isWhite() ? getbPieces() : getwPieces();
+        List<Piece> oponentPieces = bPieces;
 
         return oponentPieces.stream().anyMatch(p -> {
             p.allLegalMoves(this);
             return p.getLegalMoves().stream()
-                    .anyMatch(m -> m.getToX() == king.getX() && m.getToY() == king.getY());
+                    .anyMatch(m -> m.getToX() == wKing.getX() && m.getToY() == wKing.getY());
+        });
+    }
+
+    /**
+     * @return {@code} true} if black king is being checked, {@code false} otherwise
+     */
+    public boolean isBKingChecked() {
+        if (bKing == null) {
+            return false;
+        }
+
+        List<Piece> oponentPieces = wPieces;
+
+        return oponentPieces.stream().anyMatch(p -> {
+            p.allLegalMoves(this);
+            return p.getLegalMoves().stream()
+                    .anyMatch(m -> m.getToX() == bKing.getX() && m.getToY() == bKing.getY());
         });
     }
 
@@ -384,13 +352,6 @@ public class Board {
     }
 
     // getters and setters
-
-    /**
-     * @return the tiles
-     */
-    public Piece[][] getTiles() {
-        return tiles;
-    }
 
     /**
      * @return the wPieces
@@ -424,22 +385,14 @@ public class Board {
      * @return white king, or {@code null} if not exist
      */
     public King getWKing() {
-        return wKing != null ? wKing
-                : (King) wPieces.stream()
-                        .filter(p -> p instanceof King)
-                        .findFirst()
-                        .orElse(null);
+        return wKing;
     }
 
     /**
      * @return black king, or {@code null} if not exist
      */
     public King getBKing() {
-        return bKing != null ? bKing
-                : (King) bPieces.stream()
-                        .filter(p -> p instanceof King)
-                        .findFirst()
-                        .orElse(null);
+        return bKing;
     }
 
     /**

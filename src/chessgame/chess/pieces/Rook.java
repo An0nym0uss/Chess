@@ -1,11 +1,18 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
 import java.io.IOException;
+import java.io.Serial;
 import javax.imageio.ImageIO;
 
-import chessgame.Board;
+import chessgame.chess.board.Board;
 
+/**
+ * Rook is a type of {@code Piece} that can move along a column or row.
+ */
 public class Rook extends Piece {
+    @Serial
+    private static final long serialVersionUID = 0x020006;
+
     public Rook(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         try {

@@ -1,8 +1,7 @@
-package chessgame;
-
+package chessgame.chess;
 
 /**
- * Class {@code GameState} defines states of Chess, 
+ * Class {@code GameState} defines states of Chess,
  */
 public class GameState {
     public static final int CONTINUE = 0;

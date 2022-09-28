@@ -1,11 +1,17 @@
-package chessgame;
+package chessgame.chess.util;
 
-import chessgame.pieces.Piece;
+import java.io.Serial;
+import java.io.Serializable;
+
+import chessgame.chess.pieces.Piece;
 
 /**
  * Class {@code Move} stores the movement of a chess piece.
  */
-public class Move {
+public class Move implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 0x030001;
+
     private Piece piece;
     private int fromX, fromY, toX, toY;
     private boolean isCastling, isPromotion;

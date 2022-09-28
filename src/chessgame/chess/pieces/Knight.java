@@ -1,12 +1,19 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
 import java.io.IOException;
+import java.io.Serial;
 import javax.imageio.ImageIO;
-import java.lang.Math;
 
-import chessgame.Board;
+import chessgame.chess.board.Board;
 
+/**
+ * Knight is a type of {@code Piece} that can move to any of the closest squares
+ * that are not on the same row, column, or diagonal. (in an 'L' shape)
+ */
 public class Knight extends Piece {
+    @Serial
+    private static final long serialVersionUID = 0x020003;
+
     public Knight(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         try {

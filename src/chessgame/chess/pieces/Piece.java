@@ -1,26 +1,36 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.Graphics;
 
-import chessgame.Board;
-import chessgame.GamePanel;
-import chessgame.Move;
+import chessgame.chess.Drawable;
+import chessgame.chess.GamePanel;
+import chessgame.chess.board.Board;
+import chessgame.chess.util.Move;
 
 /**
- * Class {@code} defines a chess piece.
+ * Class {@code} defines a chess piece which can move on a Board.
  */
-public abstract class Piece {
+public abstract class Piece implements Drawable, Serializable {
+    @Serial
+    private static final long serialVersionUID = 0x020000;
+
     protected int x;
     protected int y;
     protected boolean isWhite;
     protected boolean isMoved;
     protected List<Move> legalMoves = new ArrayList<>();
     protected List<Move> validMoves = new ArrayList<>();
-    protected BufferedImage image;
+    transient protected BufferedImage image;
     private int startX;
     private int startY;
     private int turnFirstMoved;
@@ -51,9 +61,9 @@ public abstract class Piece {
      * vertcally.
      * Target tile is either empty or occupied by an enemy piece.
      * 
-     * @param toX
-     * @param toY
-     * @param board
+     * @param toX   target column
+     * @param toY   target row
+     * @param board chess board
      * @return {@code true} if obstructed, {@code false} otherwise
      */
     protected boolean isObstructedOrthognally(int toX, int toY, Board board) {
@@ -94,9 +104,9 @@ public abstract class Piece {
      * Check if path from current tile to target tile is obstructed diagnally.
      * Target tile is either empty or occupied by an enemy piece.
      * 
-     * @param toX
-     * @param toY
-     * @param board
+     * @param toX   target column
+     * @param toY   target row
+     * @param board chess board
      * @return {@code true} if obstructed, {@code false} otherwise
      */
     protected boolean isObstructedDiagonally(int toX, int toY, Board board) {
@@ -189,9 +199,9 @@ public abstract class Piece {
      * Piece in given tile is captured. Place it in {@code deadPieces} and
      * remove from pieces list.
      * 
-     * @param board
-     * @param x
-     * @param y
+     * @param board chess board
+     * @param x     column
+     * @param y     row
      */
     private void capturePiece(Board board, int x, int y) {
         board.getDeadPieces().put(board.getTurn(), board.getPiece(x, y));
@@ -199,9 +209,10 @@ public abstract class Piece {
     }
 
     /**
-     * Store all possible moves can be made by this piece.
+     * Store all possible moves can be made by this piece
+     * without taking note of the king.
      * 
-     * @param board
+     * @param board chess board
      */
     public void allLegalMoves(Board board) {
         legalMoves.clear();
@@ -215,13 +226,33 @@ public abstract class Piece {
     }
 
     /**
+     * Store all valid moves can be made by this piece.
+     * 
+     * @param board chess board
+     */
+    public void allValidMoves(Board board) {
+        for (Move move : legalMoves) {
+            move(move.getToX(), move.getToY(), board);
+            board.incrementTurn();
+
+            // valid if the king is not checked after the move
+            King king = isWhite ? board.getWKing() : board.getBKing();
+            Boolean isChecked = isWhite ? board.isWKingChecked() : board.isBKingChecked();
+            if (king == null || (king != null && !isChecked)) {
+                validMoves.add(move);
+            }
+            board.takeBackMove();
+        }
+    }
+
+    /**
      * Pawn performs En Passant move if valid.
      * 
-     * @param fromX
-     * @param fromY
-     * @param toX
-     * @param toY
-     * @param board
+     * @param fromX original column
+     * @param fromY original row
+     * @param toX   target column
+     * @param toY   target row
+     * @param board chess board
      */
     private void enPassant(int fromX, int fromY, int toX, int toY, Board board) {
         // capture enemy pawn if is diagnally forward
@@ -237,11 +268,11 @@ public abstract class Piece {
      * then placing the rook on the other side of the king, adjacent to it.
      * This method places the rook next to king.
      * 
-     * @param fromX
-     * @param fromY
-     * @param toX
-     * @param toY
-     * @param board
+     * @param fromX original column
+     * @param fromY original row
+     * @param toX   target column
+     * @param toY   target row
+     * @param board chess board
      * @return {@code true} if current move is castling, {@code false} otherwise
      */
     private boolean castling(int fromX, int fromY, int toX, int toY, Board board) {
@@ -272,12 +303,7 @@ public abstract class Piece {
         return false;
     }
 
-    /**
-     * Draw image of the piece to panel.
-     * 
-     * @param g
-     * @param frame
-     */
+    @Override
     public void draw(Graphics g, JPanel panel) {
         GamePanel gamePanel = (GamePanel) panel;
         g.drawImage(image, x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(),
@@ -299,31 +325,61 @@ public abstract class Piece {
                 && this.isWhite == other.isWhite;
     }
 
+    /**
+     * Write out the byte data for {@code BufferedImage} beacuse
+     * {@code BufferedImage} is not serializable.
+     * 
+     * @param out the output stream
+     */
+    private void writeObject(ObjectOutputStream out) {
+        try {
+            out.defaultWriteObject();
+            ImageIO.write(image, "png", out);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Read in the byte data for {@code BufferedImage} beacuse
+     * {@code BufferedImage} is not serializable.
+     * 
+     * @param in the input stream
+     */
+    private void readObject(ObjectInputStream in) {
+        try {
+            in.defaultReadObject();
+            image = ImageIO.read(in);
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // getters and setters
 
     /**
-     * @return the x
+     * @return the column
      */
     public int getX() {
         return x;
     }
 
     /**
-     * @param x the x to set
+     * @param x the column to set
      */
     public void setX(int x) {
         this.x = x;
     }
 
     /**
-     * @return the y
+     * @return the row
      */
     public int getY() {
         return y;
     }
 
     /**
-     * @param y the y to set
+     * @param y the row to set
      */
     public void setY(int y) {
         this.y = y;

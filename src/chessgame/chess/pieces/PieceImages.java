@@ -1,9 +1,9 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
 /**
  * Class {@code PieceImages} defines paths of images of chess pieces.
  */
-public class PieceImages {
+public final class PieceImages {
     public static String BISHOP_B = "/resources/pieceImages/bishop_b.png";
     public static String BISHOP_W = "/resources/pieceImages/bishop_w.png";
     public static String KING_B = "/resources/pieceImages/king_b.png";

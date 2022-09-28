@@ -3,10 +3,10 @@ package test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.Test;
 
-import chessgame.Board;
-import chessgame.Game;
-import chessgame.pieces.Pawn;
-import chessgame.pieces.Piece;
+import chessgame.chess.Game;
+import chessgame.chess.board.Board;
+import chessgame.chess.pieces.Pawn;
+import chessgame.chess.pieces.Piece;
 
 
 public class TakeBackTest {
