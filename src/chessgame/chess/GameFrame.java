@@ -1,4 +1,4 @@
-package chessgame;
+package chessgame.chess;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -11,11 +11,15 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Class {@code GameFrame} defines the game frame of Chess and displays it on
+ * screen.
+ */
 public class GameFrame extends JFrame implements Runnable {
     private int width;
     private GamePanel panel;
     private Game game;
-    
+
     public GameFrame() {
     }
 
@@ -25,7 +29,7 @@ public class GameFrame extends JFrame implements Runnable {
     }
 
     /**
-     * Allows to choose resolution of Chess game and then starts the game. 
+     * Allows to choose resolution of Chess game and then starts the game.
      */
     private void chooseResolution() {
         JFrame resolution = new JFrame();
@@ -33,7 +37,7 @@ public class GameFrame extends JFrame implements Runnable {
         JLabel titleLable = new JLabel("Choose resolution");
         title.add(titleLable);
         resolution.add(title, BorderLayout.NORTH);
-        
+
         // buttons for different resolutions
         JPanel buttons = new JPanel();
         buttons.setLayout(new GridLayout(4, 1, 10, 10));
@@ -86,7 +90,7 @@ public class GameFrame extends JFrame implements Runnable {
     }
 
     /**
-     * The game starts with a board panel and buttons at the bottom. 
+     * The game starts with a board panel and buttons at the bottom.
      */
     private void startGame() {
         game = new Game();
@@ -95,9 +99,9 @@ public class GameFrame extends JFrame implements Runnable {
         this.getContentPane().add(panel, BorderLayout.NORTH);
         this.setTitle("Chess");
         this.setResizable(false);
-        
+
         this.getContentPane().add(buttons(), BorderLayout.SOUTH);
-        
+
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
@@ -106,6 +110,7 @@ public class GameFrame extends JFrame implements Runnable {
 
     /**
      * Construct panel of two buttons: new game, take back move.
+     * 
      * @return button panel
      */
     private JPanel buttons() {

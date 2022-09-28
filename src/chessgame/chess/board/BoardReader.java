@@ -1,10 +1,13 @@
-package chessgame;
+package chessgame.chess.board;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
+/**
+ * Class {@code BoardReader} is used to help set up {@code Board}.
+ */
 public class BoardReader {
 
     /**

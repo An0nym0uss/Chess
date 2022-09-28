@@ -1,11 +1,21 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
-import chessgame.Board;
-import chessgame.Move;
+import chessgame.chess.board.Board;
+import chessgame.chess.util.Move;
 
+/**
+ * Pawn is a type of {@code Piece} that can move forward to the unoccupied
+ * square immediately in front of it, or on its first move it can advance two
+ * squares, provided both squares are unoccupied.
+ * 
+ * <p>A pawn can only capture an opponent's piece on a square diagonally in
+ * front of it by moving to that square.
+ * 
+ * <p>A pawn has two special moves: the en passant capture and promotion.
+ */
 public class Pawn extends Piece {
 
     public Pawn(int x, int y, boolean isWhite) {

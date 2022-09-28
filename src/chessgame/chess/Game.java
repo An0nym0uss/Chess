@@ -1,25 +1,27 @@
-package chessgame;
+package chessgame.chess;
 
 import java.awt.Graphics;
 import java.util.List;
 import javax.swing.JPanel;
 
-import chessgame.pieces.Bishop;
-import chessgame.pieces.King;
-import chessgame.pieces.Knight;
-import chessgame.pieces.Piece;
-import chessgame.pieces.Queen;
-import chessgame.pieces.Rook;
+import chessgame.chess.board.Board;
+import chessgame.chess.pieces.Bishop;
+import chessgame.chess.pieces.King;
+import chessgame.chess.pieces.Knight;
+import chessgame.chess.pieces.Piece;
+import chessgame.chess.pieces.Queen;
+import chessgame.chess.pieces.Rook;
+import chessgame.chess.util.Move;
 
 /**
  * Class {@code Game} contains a chess board and a chosen piece.
  * It provides methods that manipulates the chosen piece and
  * allows Chess game to run.
  */
-public class Game {
+public class Game implements Drawable {
     private Board board;
     private Piece chosen;
-    private int checkmate;
+    private int gameState;
 
     public static int SELECT = 0;
     public static int MOVE = 1;
@@ -140,18 +142,7 @@ public class Game {
         }
 
         for (Piece piece : pieces) {
-            for (Move move : piece.getLegalMoves()) {
-                piece.move(move.getToX(), move.getToY(), board);
-                board.incrementTurn();
-
-                // valid if the king is not checked after the move
-                if (king != null && !board.isChecked(king)) {
-                    piece.getValidMoves().add(move);
-                } else if (king == null) {
-                    piece.getValidMoves().add(move);
-                }
-                board.takeBackMove();
-            }
+            piece.allValidMoves(board, king);
         }
 
         checkmate();
@@ -173,21 +164,15 @@ public class Game {
 
         Piece newPiece;
         switch (target) {
-            case 1:
-                newPiece = new Rook(x, y, isWhite);
-                break;
-            case 2:
-                newPiece = new Knight(x, y, isWhite);
-                break;
-            case 3:
-                newPiece = new Bishop(x, y, isWhite);
-                break;
-            default:
-                newPiece = new Queen(x, y, isWhite);
-                break;
+            case 1 -> newPiece = new Rook(x, y, isWhite);
+            case 2 -> newPiece = new Knight(x, y, isWhite);
+            case 3 -> newPiece = new Bishop(x, y, isWhite);
+            default -> newPiece = new Queen(x, y, isWhite);
         }
 
         board.setTile(x, y, newPiece);
+
+        checkmate();
     }
 
     /**
@@ -206,14 +191,14 @@ public class Game {
 
         List<Piece> pieces = isWhiteTurn() ? board.getwPieces() : board.getbPieces();
         King king = isWhiteTurn() ? board.getWKing() : board.getBKing();
-        checkmate = isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
+        gameState = isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
 
         if (pieces.stream().anyMatch(p -> !p.getValidMoves().isEmpty())) {
-            checkmate = GameState.CONTINUE;
+            gameState = GameState.CONTINUE;
         }
 
-        if (checkmate != GameState.CONTINUE && !king.isChecked()) {
-            checkmate = GameState.STALE_MATE;
+        if (gameState != GameState.CONTINUE && !king.isChecked()) {
+            gameState = GameState.STALE_MATE;
         }
     }
 
@@ -224,14 +209,59 @@ public class Game {
         board.takeBackMove();
     }
 
-    /**
-     * Draw the game board.
-     * 
-     * @param g
-     * @param panel
-     */
+    @Override
     public void draw(Graphics g, JPanel panel) {
-        board.draw(g, panel, chosen);
+        board.draw(g, panel);
+
+        if (chosen != null) {
+            highlightTile(g, panel, chosen);
+            chosen.draw(g, panel);
+            drawValidMoves(g, panel, chosen);
+        }
+    }
+
+    /**
+     * Highlight the tile occupied by given piece.
+     * 
+     * @param g      the Graphics
+     * @param panel  the panel
+     * @param chosen given chess piece
+     */
+    private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
+        GamePanel gamePanel = (GamePanel) panel;
+        int x = chosen.getX();
+        int y = chosen.getY();
+
+        g.setColor(TileColor.HIGHLIGHT_TILE);
+        g.fillRect(x * gamePanel.getTileWidth(), y * gamePanel.getTileWidth(),
+                gamePanel.getTileWidth(), gamePanel.getTileWidth());
+    }
+
+    /**
+     * Draw valid moves of chosen piece.
+     * 
+     * @param g      the Graphics
+     * @param panel  the panel
+     * @param chosen given chess piece
+     */
+    private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
+        GamePanel gamePanel = (GamePanel) panel;
+
+        for (Move move : chosen.getValidMoves()) {
+            int x = move.getToX();
+            int y = move.getToY();
+            if (board.getPiece(x, y) == null) {
+                g.setColor(TileColor.MOVE);
+            } else {
+                g.setColor(TileColor.CAPTURE);
+            }
+
+            int size = gamePanel.getTileWidth();
+            int diameter = gamePanel.getTileWidth() / 2;
+            int offset_2 = (int) (2 * diameter * 0.41421);
+            int offset = (int) ((size * 1.41421 - diameter - offset_2) / 2);
+            g.fillOval(x * size + offset, y * size + offset, diameter, diameter);
+        }
     }
 
     /**
@@ -251,10 +281,10 @@ public class Game {
     // getters and setters
 
     /**
-     * @return the checkmate
+     * @return the game state
      */
-    public int getCheckmate() {
-        return checkmate;
+    public int getGameState() {
+        return gameState;
     }
 
     /**

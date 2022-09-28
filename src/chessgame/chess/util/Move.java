@@ -1,6 +1,6 @@
-package chessgame;
+package chessgame.chess.util;
 
-import chessgame.pieces.Piece;
+import chessgame.chess.pieces.Piece;
 
 /**
  * Class {@code Move} stores the movement of a chess piece.

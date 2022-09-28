@@ -1,11 +1,14 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
-import javax.imageio.ImageIO;
 import java.io.IOException;
-import java.lang.Math;
+import javax.imageio.ImageIO;
 
-import chessgame.Board;
+import chessgame.chess.board.Board;
 
+/**
+ * King is a type of {@code Piece} that can move one tile at a time. If king is
+ * destined to be captured by an enemy piece, the game is lost.
+ */
 public class King extends Piece {
 
     private boolean isChecked;

@@ -3,10 +3,10 @@ package test;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import chessgame.pieces.*;
-import chessgame.Board;
-import chessgame.Game;
-import chessgame.Move;
+import chessgame.chess.Game;
+import chessgame.chess.board.Board;
+import chessgame.chess.pieces.*;
+import chessgame.chess.util.Move;
 
 public class PawnTest {
 

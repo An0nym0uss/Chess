@@ -1,16 +1,19 @@
-package chessgame.pieces;
+package chessgame.chess.pieces;
 
-import javax.imageio.ImageIO;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 
-import chessgame.Board;
+import chessgame.chess.board.Board;
 
-public class Queen extends Piece {
-    public Queen(int x, int y, boolean isWhite) {
+/**
+ * Bishop is a type of {@code Piece} that can move diagnally.
+ */
+public class Bishop extends Piece {
+    public Bishop(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         try {
-            this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.QUEEN_W))
-                    : ImageIO.read(getClass().getResource(PieceImages.QUEEN_B));
+            this.image = isWhite ? ImageIO.read(getClass().getResource(PieceImages.BISHOP_W))
+                    : ImageIO.read(getClass().getResource(PieceImages.BISHOP_B));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
@@ -23,11 +26,12 @@ public class Queen extends Piece {
     public boolean canMove(int toX, int toY, Board board) {
         if (toX == this.getX() && toY == this.getY()) {
             return false;
-        } else if (toX == this.getX() || toY == this.getY()) {
-            return !isObstructedOrthognally(toX, toY, board);
-        } else if (Math.abs(toX - this.getX()) == Math.abs(toY - this.getY())) {
+        }
+
+        if (Math.abs(toX - this.getX()) == Math.abs(toY - this.getY())) {
             return !isObstructedDiagonally(toX, toY, board);
         }
+
         return false;
     }
 }
