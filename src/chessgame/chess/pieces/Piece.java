@@ -1,8 +1,14 @@
 package chessgame.chess.pieces;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.Graphics;
 
@@ -14,14 +20,17 @@ import chessgame.chess.util.Move;
 /**
  * Class {@code} defines a chess piece which can move on a Board.
  */
-public abstract class Piece implements Drawable {
+public abstract class Piece implements Drawable, Serializable {
+    @Serial
+    private static final long serialVersionUID = 0x020000;
+
     protected int x;
     protected int y;
     protected boolean isWhite;
     protected boolean isMoved;
     protected List<Move> legalMoves = new ArrayList<>();
     protected List<Move> validMoves = new ArrayList<>();
-    protected BufferedImage image;
+    transient protected BufferedImage image;
     private int startX;
     private int startY;
     private int turnFirstMoved;
@@ -221,16 +230,16 @@ public abstract class Piece implements Drawable {
      * 
      * @param board chess board
      */
-    public void allValidMoves(Board board, King king) {
-        for (Move move : this.getLegalMoves()) {
-            this.move(move.getToX(), move.getToY(), board);
+    public void allValidMoves(Board board) {
+        for (Move move : legalMoves) {
+            move(move.getToX(), move.getToY(), board);
             board.incrementTurn();
 
             // valid if the king is not checked after the move
-            if (king != null && !board.isChecked(king)) {
-                this.getValidMoves().add(move);
-            } else if (king == null) {
-                this.getValidMoves().add(move);
+            King king = isWhite ? board.getWKing() : board.getBKing();
+            Boolean isChecked = isWhite ? board.isWKingChecked() : board.isBKingChecked();
+            if (king == null || (king != null && !isChecked)) {
+                validMoves.add(move);
             }
             board.takeBackMove();
         }
@@ -314,6 +323,36 @@ public abstract class Piece implements Drawable {
         return this.startX == other.startX
                 && this.startY == other.startY
                 && this.isWhite == other.isWhite;
+    }
+
+    /**
+     * Write out the byte data for {@code BufferedImage} beacuse
+     * {@code BufferedImage} is not serializable.
+     * 
+     * @param out the output stream
+     */
+    private void writeObject(ObjectOutputStream out) {
+        try {
+            out.defaultWriteObject();
+            ImageIO.write(image, "png", out);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Read in the byte data for {@code BufferedImage} beacuse
+     * {@code BufferedImage} is not serializable.
+     * 
+     * @param in the input stream
+     */
+    private void readObject(ObjectInputStream in) {
+        try {
+            in.defaultReadObject();
+            image = ImageIO.read(in);
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // getters and setters

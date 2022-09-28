@@ -23,9 +23,6 @@ public class Game implements Drawable {
     private Piece chosen;
     private int gameState;
 
-    public static int SELECT = 0;
-    public static int MOVE = 1;
-
     /**
      * Construct a game with default Chess board.
      */
@@ -37,7 +34,7 @@ public class Game implements Drawable {
     /**
      * Construct a game with a board of given file.
      * 
-     * @param empty {@code true} creates an empty board
+     * @param fileName the file of board setup
      */
     public Game(String fileName) {
         this.board = new Board(fileName);
@@ -45,22 +42,13 @@ public class Game implements Drawable {
     }
 
     /**
-     * Select the piece on tile or
-     * move chosen piece to the tile.
+     * Costruct a game with given board.
      * 
-     * @param x column
-     * @param y row
-     * @return {@code SELECT} if select, or {@code MOVE} if move.
+     * @param board the board
      */
-    public int selectOrMove(int x, int y) {
-        Piece target = board.getPiece(x, y);
-        if (target != null && target.isWhite() == isWhiteTurn()) {
-            selectPiece(x, y);
-            return SELECT;
-        } else {
-            move(x, y);
-            return MOVE;
-        }
+    public Game(Board board) {
+        this.board = board;
+        changeSide();
     }
 
     /**
@@ -72,6 +60,13 @@ public class Game implements Drawable {
      */
     public void selectPiece(int x, int y) {
         chosen = board.getPiece(x, y);
+    }
+
+    /**
+     * Set {@code chosen} piece to null.
+     */
+    public void deselectChosen() {
+        this.chosen = null;
     }
 
     /**
@@ -106,46 +101,49 @@ public class Game implements Drawable {
     }
 
     /**
+     * Check if checkmate and generate available moves of pieces.
+     */
+    public void changeSide() {
+        setKingsChecked();
+
+        List<Piece> pieces = board.isWhiteTurn() ? board.getwPieces() : board.getbPieces();
+        if (board.isWhiteTurn()) {
+            generateAllWhiteMoves();
+        } else {
+            generateAllBlackMoves();
+        }
+        pieces.forEach(p -> {
+            p.getValidMoves().clear();
+            p.allValidMoves(board);
+        });
+
+        checkmate();
+    }
+
+    /**
+     * Check if kings are being checked, and set {@code isChecked}.
+     */
+    private void setKingsChecked() {
+        if (board.getWKing() != null) {
+            board.getWKing().setChecked(board.isWKingChecked());
+        }
+        if (board.getBKing() != null) {
+            board.getBKing().setChecked(board.isBKingChecked());
+        }
+    }
+
+    /**
      * Generate legal moves of all white pieces.
      */
-    public void generateAllWhiteMoves() {
+    private void generateAllWhiteMoves() {
         board.getwPieces().forEach(p -> p.allLegalMoves(board));
     }
 
     /**
      * Generate legal moves of all black pieces.
      */
-    public void generateAllBlackMoves() {
+    private void generateAllBlackMoves() {
         board.getbPieces().forEach(p -> p.allLegalMoves(board));
-    }
-
-    /**
-     * Check if checkmate and generate available moves of pieces.
-     */
-    public void changeSide() {
-        board.setKingsChecked();
-
-        List<Piece> pieces;
-        King king;
-        if (isWhiteTurn()) {
-            pieces = board.getwPieces();
-            king = board.getWKing();
-
-            generateAllWhiteMoves();
-            pieces.forEach(p -> p.getValidMoves().clear());
-        } else {
-            pieces = board.getbPieces();
-            king = board.getBKing();
-
-            generateAllBlackMoves();
-            pieces.forEach(p -> p.getValidMoves().clear());
-        }
-
-        for (Piece piece : pieces) {
-            piece.allValidMoves(board, king);
-        }
-
-        checkmate();
     }
 
     /**
@@ -183,20 +181,20 @@ public class Game implements Drawable {
      * {@code Checkmate.STALE_MATE}.
      */
     public void checkmate() {
-        if ((isWhiteTurn() && board.getWKing() == null) ||
-                (!isWhiteTurn() && board.getBKing() == null)) {
+        if ((board.isWhiteTurn() && board.getWKing() == null) ||
+                (!board.isWhiteTurn() && board.getBKing() == null)) {
             // king not found, do nothing
             return;
         }
 
-        List<Piece> pieces = isWhiteTurn() ? board.getwPieces() : board.getbPieces();
-        King king = isWhiteTurn() ? board.getWKing() : board.getBKing();
-        gameState = isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
+        gameState = board.isWhiteTurn() ? GameState.BLACK_WINS : GameState.WHITE_WINS;
 
+        List<Piece> pieces = board.isWhiteTurn() ? board.getwPieces() : board.getbPieces();
         if (pieces.stream().anyMatch(p -> !p.getValidMoves().isEmpty())) {
             gameState = GameState.CONTINUE;
         }
 
+        King king = board.isWhiteTurn() ? board.getWKing() : board.getBKing();
         if (gameState != GameState.CONTINUE && !king.isChecked()) {
             gameState = GameState.STALE_MATE;
         }
@@ -214,20 +212,19 @@ public class Game implements Drawable {
         board.draw(g, panel);
 
         if (chosen != null) {
-            highlightTile(g, panel, chosen);
+            highlightTile(g, panel);
             chosen.draw(g, panel);
-            drawValidMoves(g, panel, chosen);
+            drawValidMoves(g, panel);
         }
     }
 
     /**
-     * Highlight the tile occupied by given piece.
+     * Highlight the tile occupied by chosen piece.
      * 
-     * @param g      the Graphics
-     * @param panel  the panel
-     * @param chosen given chess piece
+     * @param g     the Graphics
+     * @param panel the panel
      */
-    private void highlightTile(Graphics g, JPanel panel, Piece chosen) {
+    private void highlightTile(Graphics g, JPanel panel) {
         GamePanel gamePanel = (GamePanel) panel;
         int x = chosen.getX();
         int y = chosen.getY();
@@ -238,13 +235,12 @@ public class Game implements Drawable {
     }
 
     /**
-     * Draw valid moves of chosen piece.
+     * Draw valid moves of chosen piece as discs in the middle of the tiles.
      * 
-     * @param g      the Graphics
-     * @param panel  the panel
-     * @param chosen given chess piece
+     * @param g     the Graphics
+     * @param panel the panel
      */
-    private void drawValidMoves(Graphics g, JPanel panel, Piece chosen) {
+    private void drawValidMoves(Graphics g, JPanel panel) {
         GamePanel gamePanel = (GamePanel) panel;
 
         for (Move move : chosen.getValidMoves()) {
@@ -262,20 +258,6 @@ public class Game implements Drawable {
             int offset = (int) ((size * 1.41421 - diameter - offset_2) / 2);
             g.fillOval(x * size + offset, y * size + offset, diameter, diameter);
         }
-    }
-
-    /**
-     * @return {@code true} if is white's turn ({@code turn} is even)
-     */
-    public boolean isWhiteTurn() {
-        return board.isWhiteTurn();
-    }
-
-    /**
-     * Set {@code chosen} piece to null.
-     */
-    public void deselectChosen() {
-        this.chosen = null;
     }
 
     // getters and setters

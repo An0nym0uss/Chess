@@ -2,6 +2,7 @@ package chessgame.chess.pieces;
 
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.io.Serial;
 
 import chessgame.chess.board.Board;
 import chessgame.chess.util.Move;
@@ -17,6 +18,8 @@ import chessgame.chess.util.Move;
  * <p>A pawn has two special moves: the en passant capture and promotion.
  */
 public class Pawn extends Piece {
+    @Serial
+    private static final long serialVersionUID = 0x020004;
 
     public Pawn(int x, int y, boolean isWhite) {
         super(x, y, isWhite);

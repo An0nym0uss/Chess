@@ -1,6 +1,7 @@
 package chessgame.chess.pieces;
 
 import java.io.IOException;
+import java.io.Serial;
 import javax.imageio.ImageIO;
 
 import chessgame.chess.board.Board;
@@ -10,6 +11,8 @@ import chessgame.chess.board.Board;
  * destined to be captured by an enemy piece, the game is lost.
  */
 public class King extends Piece {
+    @Serial
+    private static final long serialVersionUID = 0x020002;
 
     private boolean isChecked;
 

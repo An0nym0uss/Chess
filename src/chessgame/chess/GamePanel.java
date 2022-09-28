@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import java.awt.Dimension;
 
 import chessgame.chess.pieces.Pawn;
+import chessgame.chess.pieces.Piece;
 
 /**
  * Class {@code GamePanel} defines the Chess game panel and interactions of
@@ -74,8 +75,11 @@ public class GamePanel extends JPanel {
                 int x = xCord / tileWidth;
                 int y = yCord / tileWidth;
 
-                int choice = game.selectOrMove(x, y);
-                if (choice == Game.MOVE) {
+                Piece target = game.getBoard().getPiece(x, y);
+                if (target != null && target.isWhite() == game.getBoard().isWhiteTurn()) {
+                    game.selectPiece(x, y);
+                } else {
+                    game.move(x, y);
                     promotion();
                     game.deselectChosen();
                 }

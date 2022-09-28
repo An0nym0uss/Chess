@@ -8,6 +8,8 @@ import java.util.Stack;
 import javax.swing.JPanel;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.io.Serial;
+import java.io.Serializable;
 import java.awt.BasicStroke;
 
 import chessgame.chess.Drawable;
@@ -20,7 +22,10 @@ import chessgame.chess.util.Move;
  * Class {@code Board} contains a 8 * 8 board and information of Pieces.
  * It also stores previous moves which allows us to trace back steps.
  */
-public class Board implements Drawable {
+public class Board implements Drawable, Serializable {
+    @Serial
+    private static final long serialVersionUID = 0x010001;
+
     public static int ROWS = 8;
     public static int COLUMNS = 8;
 
@@ -33,10 +38,18 @@ public class Board implements Drawable {
     private Integer turn = 0;
     private Map<Integer, Piece> deadPieces = new HashMap<>();
 
+    /**
+     * Construct a board with default setup
+     */
     public Board() {
         this("basic.txt");
     }
 
+    /**
+     * Construct a board with setup of given file.
+     * 
+     * @param fileName the file of board setup
+     */
     public Board(String fileName) {
         setup(fileName);
     }
@@ -45,6 +58,8 @@ public class Board implements Drawable {
      * Initialise the board to put pieces on tiles.
      * Black pieces on the top (x = 0 || 1)
      * White pieces at the bottom (x = 6 || 7)
+     * 
+     * @param fileName the file of board setup.
      */
     private void setup(String fileName) {
         String boardStr = BoardReader.readBoard(fileName);
@@ -103,8 +118,14 @@ public class Board implements Drawable {
             }
         }
 
-        wKing = getWKing();
-        bKing = getBKing();
+        wKing = (King) wPieces.stream()
+                .filter(p -> p instanceof King)
+                .findFirst()
+                .orElse(null);
+        bKing = (King) bPieces.stream()
+                .filter(p -> p instanceof King)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -121,7 +142,7 @@ public class Board implements Drawable {
      * 
      * @param x     column
      * @param y     row
-     * @param piece
+     * @param piece the piece
      */
     public void setTile(int x, int y, Piece piece) {
         tiles[x][y] = piece;
@@ -283,28 +304,36 @@ public class Board implements Drawable {
     }
 
     /**
-     * Check if kings are being checked, and set {@code isChecked}.
+     * @return {@code} true} if white king is being checked, {@code false} otherwise
      */
-    public void setKingsChecked() {
-        if (wKing != null) {
-            wKing.setChecked(isChecked(wKing));
+    public boolean isWKingChecked() {
+        if (wKing == null) {
+            return false;
         }
-        if (bKing != null) {
-            bKing.setChecked(isChecked(bKing));
-        }
-    }
 
-    /**
-     * @param king the
-     * @return {@code} true} if king is being checked, {@code false} otherwise
-     */
-    public boolean isChecked(King king) {
-        List<Piece> oponentPieces = king.isWhite() ? getbPieces() : getwPieces();
+        List<Piece> oponentPieces = bPieces;
 
         return oponentPieces.stream().anyMatch(p -> {
             p.allLegalMoves(this);
             return p.getLegalMoves().stream()
-                    .anyMatch(m -> m.getToX() == king.getX() && m.getToY() == king.getY());
+                    .anyMatch(m -> m.getToX() == wKing.getX() && m.getToY() == wKing.getY());
+        });
+    }
+
+    /**
+     * @return {@code} true} if black king is being checked, {@code false} otherwise
+     */
+    public boolean isBKingChecked() {
+        if (bKing == null) {
+            return false;
+        }
+
+        List<Piece> oponentPieces = wPieces;
+
+        return oponentPieces.stream().anyMatch(p -> {
+            p.allLegalMoves(this);
+            return p.getLegalMoves().stream()
+                    .anyMatch(m -> m.getToX() == bKing.getX() && m.getToY() == bKing.getY());
         });
     }
 
@@ -323,13 +352,6 @@ public class Board implements Drawable {
     }
 
     // getters and setters
-
-    /**
-     * @return the tiles
-     */
-    public Piece[][] getTiles() {
-        return tiles;
-    }
 
     /**
      * @return the wPieces
@@ -363,22 +385,14 @@ public class Board implements Drawable {
      * @return white king, or {@code null} if not exist
      */
     public King getWKing() {
-        return wKing != null ? wKing
-                : (King) wPieces.stream()
-                        .filter(p -> p instanceof King)
-                        .findFirst()
-                        .orElse(null);
+        return wKing;
     }
 
     /**
      * @return black king, or {@code null} if not exist
      */
     public King getBKing() {
-        return bKing != null ? bKing
-                : (King) bPieces.stream()
-                        .filter(p -> p instanceof King)
-                        .findFirst()
-                        .orElse(null);
+        return bKing;
     }
 
     /**

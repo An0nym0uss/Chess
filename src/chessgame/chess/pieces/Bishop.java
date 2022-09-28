@@ -1,6 +1,7 @@
 package chessgame.chess.pieces;
 
 import java.io.IOException;
+import java.io.Serial;
 import javax.imageio.ImageIO;
 
 import chessgame.chess.board.Board;
@@ -9,6 +10,9 @@ import chessgame.chess.board.Board;
  * Bishop is a type of {@code Piece} that can move diagnally.
  */
 public class Bishop extends Piece {
+    @Serial
+    private static final long serialVersionUID = 0x020001;
+
     public Bishop(int x, int y, boolean isWhite) {
         super(x, y, isWhite);
         try {
